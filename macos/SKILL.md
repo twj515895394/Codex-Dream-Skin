@@ -71,15 +71,21 @@ The generated theme is stored under:
 
 Read [`references/theme-config.md`](references/theme-config.md) when the brief requires custom brand subtitle, status text, project labels, full dark palette, or direct `theme.json` editing. Do not edit CSS for a standard configuration theme.
 
-Validate the complete payload before applying it:
+Validate the complete payload before applying it through the same app discovery and signature checks used by the project:
 
 ```bash
-THEME_DIR="$HOME/Library/Application Support/CodexDreamSkinStudio/theme"
-"$ENGINE/Contents/Resources/cua_node/bin/node" 2>/dev/null || true
-"$ENGINE/scripts/injector.mjs" --check-payload --theme-dir "$THEME_DIR"
+/bin/bash -c '
+  set -euo pipefail
+  ENGINE="$HOME/.codex/codex-dream-skin-studio"
+  THEME_DIR="$HOME/Library/Application Support/CodexDreamSkinStudio/theme"
+  . "$ENGINE/scripts/common-macos.sh"
+  discover_codex_app
+  require_macos_runtime
+  "$NODE" "$ENGINE/scripts/injector.mjs" --check-payload --theme-dir "$THEME_DIR"
+'
 ```
 
-Use the signed Node path discovered by the project scripts when the illustrative command above does not match the installed layout; do not fall back to an unverified runtime.
+Do not fall back to an unverified runtime for live payload validation.
 
 **Complete when:** the theme directory contains one prepared image no larger than 16 MB, a schema-version-1 `theme.json`, valid colors, safe local image paths, and `--check-payload` succeeds.
 
