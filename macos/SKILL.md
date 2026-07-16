@@ -1,35 +1,165 @@
 ---
 name: codex-dream-skin-studio
-description: Install, customize, launch, verify, repair, update, or restore Codex Dream Skin Studio on macOS. Use when a user wants to turn a personal image into a Codex banner and task background while preserving the native interface, or needs safe CDP theme troubleshooting and rollback.
+description: Design, build, apply, verify, repair, or restore a custom Codex Dream Skin on macOS. Use when the user asks to design or generate a Codex theme image, create a Mac Codex skin, configure theme.json colors or copy, apply a theme, extend the visual layer, or troubleshoot CDP theming while preserving native Codex controls.
 compatibility: macOS, official Codex Desktop app, signed bundled Node.js 20 or newer
 ---
 
-# Codex Dream Skin Studio
+# Codex Dream Skin Studio — macOS Theme Authoring
 
-This file is an optional Codex capability entry. The delivery is a complete standalone project; users do not need to install it as a Skill.
+Create a complete, reversible Codex theme from a visual brief or source image. Prefer a **configuration theme**—prepared image plus `theme.json`. Escalate to CSS or injected DOM only when the requested result cannot be expressed by configuration.
 
-## Workflow
+## Non-negotiable boundaries
 
-1. Run `Install Codex Dream Skin.command` from the complete project folder.
-2. Run `Customize Codex Dream Skin.command`, choose an image in Finder, and enter a theme name.
-3. Verify the live result with `Verify Codex Dream Skin.command`. A pass requires a visible native sidebar and composer, no horizontal overflow, non-interactive decoration, and—on the home route—a real banner, native cards, and project selector.
-4. Restore the official appearance with `Restore Codex Dream Skin.command`.
-
-## Guardrails
-
-- Never modify the official `.app`, `app.asar`, or its code signature.
-- Use the official Codex app's signed Node.js runtime only after validating its signature, Team ID, architecture, and minimum version.
-- Bind CDP to loopback, verify that the listener belongs to Codex, and reject non-Codex renderer targets.
-- Preserve all native cards, navigation, project selectors, task content, composer controls, and keyboard focus.
-- Keep decoration at `pointer-events: none`.
+- Never modify the official `.app`, `app.asar`, executable, resources, or code signature.
+- Bind CDP to loopback and accept only verified Codex renderer targets.
+- Preserve native sidebar, cards, project selector, task content, menus, composer, focus, and keyboard interaction.
+- Keep every decorative layer `pointer-events: none`; never use a full-window screenshot or rasterized fake interface.
 - Require explicit authorization before restarting an already-running Codex instance.
-- Stop an injector only when its recorded PID, executable, command line, and start time all match.
+- Keep API provider, Base URL, API key, authentication, threads, plugins, and user data outside the theme operation.
 
-## Key resources
+## Steps
 
-- `README.md`: user installation and customization guide.
-- `scripts/injector.mjs`: CDP connection, injection, removal, verification, and screenshots.
-- `assets/dream-skin.css`: live native interface styling.
-- `assets/renderer-inject.js`: idempotent DOM integration and cleanup.
-- `scripts/doctor-macos.sh`: signed-runtime, payload, and optional live-session self-check.
-- `references/qa-inventory.md`: release and visual acceptance criteria.
+### 1. Resolve the theme brief and runtime
+
+Determine the theme name, intended mood, subject or brand, preferred shell mode, display copy, and whether the user supplied an image or wants new artwork. Choose one scope:
+
+- **Configuration theme:** image, copy, and palette only.
+- **Structural theme:** layout, typography, card treatment, or additional decorative DOM.
+
+Locate the repository or installed engine, then verify the official Codex app and signed bundled Node runtime. Install the engine only when it is missing:
+
+```bash
+./scripts/install-dream-skin-macos.sh --no-launch
+```
+
+**Complete when:** the theme brief is concrete, the scope is selected, and both Codex and the Dream Skin runtime paths are known.
+
+### 2. Design or prepare the theme artwork
+
+Read [`references/theme-art-direction.md`](references/theme-art-direction.md) before generating, selecting, or cropping artwork.
+
+- When the user supplied an image, inspect its composition and decide whether it needs cropping, cleanup, or regeneration.
+- When new artwork is requested and an image-generation tool is available, generate the final landscape asset from the visual contract.
+- When no image-generation tool is available, produce a production-ready prompt and do not proceed to application until a real local image exists.
+
+Do not place Codex controls, fake cards, fake input boxes, small raster text, or essential content in the artwork. Keep the left side calm enough for live heading and project controls.
+
+**Complete when:** a local PNG, JPEG, HEIC, TIFF, or WebP source exists, is at most 50 MB, is preferably at least 2000 px wide, and remains legible when cropped as a wide banner and a task background.
+
+### 3. Build the configuration theme
+
+Use the installed customization script to normalize the image and create a safe base configuration. Use `--no-apply` so configuration can be inspected before restarting Codex:
+
+```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
+"$ENGINE/scripts/customize-theme-macos.sh" \
+  --image "/absolute/path/to/source-image.png" \
+  --name "Theme name" \
+  --tagline "Theme tagline" \
+  --quote "SHORT DISPLAY QUOTE" \
+  --accent "#7cff46" \
+  --secondary "#36d7e8" \
+  --highlight "#642a8c" \
+  --no-apply
+```
+
+The generated theme is stored under:
+
+```text
+~/Library/Application Support/CodexDreamSkinStudio/theme
+```
+
+Read [`references/theme-config.md`](references/theme-config.md) when the brief requires custom brand subtitle, status text, project labels, full dark palette, or direct `theme.json` editing. Do not edit CSS for a standard configuration theme.
+
+Validate the complete payload before applying it through the same app discovery and signature checks used by the project:
+
+```bash
+/bin/bash -c '
+  set -euo pipefail
+  ENGINE="$HOME/.codex/codex-dream-skin-studio"
+  THEME_DIR="$HOME/Library/Application Support/CodexDreamSkinStudio/theme"
+  . "$ENGINE/scripts/common-macos.sh"
+  discover_codex_app
+  require_macos_runtime
+  "$NODE" "$ENGINE/scripts/injector.mjs" --check-payload --theme-dir "$THEME_DIR"
+'
+```
+
+Do not fall back to an unverified runtime for live payload validation.
+
+**Complete when:** the theme directory contains one prepared image no larger than 16 MB, a schema-version-1 `theme.json`, valid colors, safe local image paths, and `--check-payload` succeeds.
+
+### 4. Apply the theme
+
+Apply through the project launcher so process identity, port ownership, restart consent, state, and logs remain managed:
+
+```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
+"$ENGINE/scripts/start-dream-skin-macos.sh" --prompt-restart
+```
+
+Never launch an alternative injector against an arbitrary Electron target. Preserve the running daemon so route changes and renderer reloads can reapply the theme.
+
+**Complete when:** the verified injector is active on a loopback port and Codex opens with the intended image, copy, and palette.
+
+### 5. Verify visually and functionally
+
+Run the live verifier and capture a real Codex screenshot:
+
+```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
+SCREENSHOT="$HOME/Desktop/Codex Dream Skin Verification.png"
+"$ENGINE/scripts/verify-dream-skin-macos.sh" --screenshot "$SCREENSHOT"
+```
+
+Read and apply every item in [`references/qa-inventory.md`](references/qa-inventory.md). Inspect both the home route and a normal task route. A screenshot that merely looks attractive is not sufficient: native interaction, contrast, overflow, focus, menus, composer access, and non-interactive decoration must all pass.
+
+When verification fails, repair the smallest responsible layer:
+
+1. artwork crop or contrast;
+2. `theme.json` copy or palette;
+3. CSS selectors or layout;
+4. renderer decoration logic.
+
+Reapply and rerun verification after each repair.
+
+**Complete when:** verifier output passes, the screenshot is retained, native controls remain usable, and both home and task routes satisfy the QA inventory.
+
+### 6. Handle structural themes only when requested
+
+Read [`references/theme-extension.md`](references/theme-extension.md) before changing `assets/dream-skin.css` or `assets/renderer-inject.js`.
+
+Make durable structural changes in the repository source, run tests, reinstall the engine, apply, and verify. Do not leave the installed engine as the only copy of a successful source change.
+
+**Complete when:** the repository is the single source of truth, syntax and project tests pass, reinstall reproduces the result, and restore still returns Codex to its official appearance.
+
+### 7. Deliver and preserve rollback
+
+Report:
+
+- theme name and source artwork path;
+- generated theme directory and key configuration values;
+- whether source CSS or renderer code changed;
+- verification screenshot path and pass status;
+- the rollback action.
+
+Rollback command:
+
+```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
+"$ENGINE/scripts/restore-dream-skin-macos.sh" --restore-base-theme --restart-codex
+```
+
+**Complete when:** the user can identify the active theme, reproduce it, verify it, and restore the official appearance without editing the Codex installation.
+
+## Repair and restore branch
+
+For a broken or stale installation, diagnose in this order:
+
+1. `scripts/doctor-macos.sh` for app identity, signature, runtime, and payload checks;
+2. injector and launch logs under `~/Library/Application Support/CodexDreamSkinStudio`;
+3. `--check-payload` against the active theme directory;
+4. live verify and screenshot;
+5. restore, reinstall, and reapply when state cannot be trusted.
+
+Never kill a recorded injector unless PID, executable, script path, command line, and start time still match the saved state.
