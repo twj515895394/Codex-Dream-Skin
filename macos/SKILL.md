@@ -94,6 +94,7 @@ Do not fall back to an unverified runtime for live payload validation.
 Apply through the project launcher so process identity, port ownership, restart consent, state, and logs remain managed:
 
 ```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
 "$ENGINE/scripts/start-dream-skin-macos.sh" --prompt-restart
 ```
 
@@ -106,6 +107,7 @@ Never launch an alternative injector against an arbitrary Electron target. Prese
 Run the live verifier and capture a real Codex screenshot:
 
 ```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
 SCREENSHOT="$HOME/Desktop/Codex Dream Skin Verification.png"
 "$ENGINE/scripts/verify-dream-skin-macos.sh" --screenshot "$SCREENSHOT"
 ```
@@ -144,6 +146,7 @@ Report:
 Rollback command:
 
 ```bash
+ENGINE="$HOME/.codex/codex-dream-skin-studio"
 "$ENGINE/scripts/restore-dream-skin-macos.sh" --restore-base-theme --restart-codex
 ```
 
