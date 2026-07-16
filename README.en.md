@@ -109,6 +109,11 @@ More detail:
 - Paths: [`docs/platforms.md`](./docs/platforms.md)
 - Project notes: [`docs/PROJECT.md`](./docs/PROJECT.md)
 
+## Feedback & contributions
+
+- **Issues:** Use the [issue templates](./.github/ISSUE_TEMPLATE/) (bug / feature). Blank issues are disabled. Please try Verify / Restore self-checks before filing bugs.
+- **PRs:** Follow the [PR template](./.github/pull_request_template.md) — describe the change and tick the self-checks you actually ran (e.g. `macos/tests/run-tests.sh`, verify / restore).
+
 ## Safety
 
 - CDP binds `127.0.0.1` only — avoid untrusted local processes while the theme runs.
