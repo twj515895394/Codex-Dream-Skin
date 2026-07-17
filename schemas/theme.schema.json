@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Codex Dream Skin Theme",
+  "type": "object",
+  "required": ["schemaVersion", "name", "appearance", "colors"],
+  "properties": {
+    "schemaVersion": {"type": "integer"},
+    "name": {"type": "string"},
+    "appearance": {
+      "type": "object",
+      "properties": {
+        "defaultMode": {"enum": ["light", "dark"]},
+        "supportedModes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "colors": {
+      "type": "object",
+      "required": ["light", "dark"]
+    }
+  }
+}
