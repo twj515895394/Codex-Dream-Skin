@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "theme-id",
+  "name": "Theme Name",
+  "version": "1.0.0",
+  "description": "A Codex Dream Skin theme package.",
+  "author": "",
+  "preview": "assets/preview.png",
+  "theme": "theme.json",
+  "assets": {
+    "wallpaper": "assets/wallpaper.png"
+  }
+}
