@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "soft-family",
+  "name": "Soft Family",
+  "version": "1.0.0",
+  "description": "A calm Codex workspace theme designed for long sessions.",
+  "author": "",
+  "preview": "assets/preview.png",
+  "theme": "theme.json",
+  "assets": {
+    "wallpaper": "assets/wallpaper.png"
+  }
+}
