@@ -11,10 +11,11 @@ Create a complete and reversible Codex theme from a visual brief or source image
 ## Non-negotiable boundaries
 
 - Never modify the official `.app`, `app.asar`, executable, resources, or code signature.
-- Use only the official Codex app signed Node.js runtime after validation.
-- Bind CDP to loopback and accept only verified Codex renderer targets.
-- Preserve native sidebar, cards, project selector, task content, menus, composer, focus, and keyboard interaction.
-- Theme images are UI-free wallpapers. Never create fake Codex UI, screenshots, buttons, input boxes, or rasterized controls.
+- Use the official Codex app's signed Node.js runtime only after validating its signature, Team ID, architecture, and minimum version.
+- Bind CDP to loopback, verify that the listener belongs to Codex, and reject non-Codex renderer targets.
+- Preserve native sidebar, cards, navigation, project selector, task content, menus, composer, focus, and keyboard interaction.
+- Theme images must be UI-free wallpapers. Never create fake Codex UI, screenshots, buttons, input boxes, or rasterized controls.
+- Paint one landscape image continuously across the window; judge both home and task routes.
 - Keep decorative layers `pointer-events: none`.
 - Require explicit authorization before restarting an already-running Codex instance.
 - Keep API providers, credentials, authentication, threads, plugins, and user data outside theme operations.
@@ -23,14 +24,7 @@ Create a complete and reversible Codex theme from a visual brief or source image
 
 ### 1. Resolve theme brief and runtime
 
-Determine:
-
-- theme identity;
-- mood and visual direction;
-- subject or brand;
-- shell mode target;
-- display copy;
-- whether the user supplied an image or needs generated artwork.
+Determine theme identity, mood, subject or brand, shell mode target, display copy, and whether the user supplied an image or needs generated artwork.
 
 Choose scope:
 
@@ -49,7 +43,7 @@ Complete when theme scope and runtime paths are known.
 
 Read `references/theme-art-direction.md` before generating or preparing artwork.
 
-Default requirements:
+Requirements:
 
 - landscape image;
 - preferably 3200px wide or 4K;
@@ -58,8 +52,6 @@ Default requirements:
 - no embedded UI or text.
 
 The same wallpaper is used across home and task routes, so judge readability in both contexts.
-
-Complete when a valid local image exists.
 
 ### 3. Generate configuration theme
 
@@ -86,13 +78,7 @@ Generated theme location:
 
 Read `references/theme-config.md` for advanced fields or direct theme.json customization.
 
-Validate payload before applying:
-
-```bash
-ENGINE="$HOME/.codex/codex-dream-skin-studio"
-THEME_DIR="$HOME/Library/Application Support/CodexDreamSkinStudio/theme"
-"$ENGINE/scripts/injector.mjs" --check-payload --theme-dir "$THEME_DIR"
-```
+Validate payload before applying using the project's signed-runtime checks.
 
 ### 4. Apply theme
 
@@ -169,3 +155,12 @@ Diagnose:
 5. restore and reinstall if state is unreliable
 
 Never kill an injector unless recorded PID, executable, script path, command line, and start time still match.
+
+## Key resources
+
+- `README.md`: user installation and customization guide.
+- `scripts/injector.mjs`: CDP connection, injection, removal, verification, and screenshots.
+- `assets/dream-skin.css`: live native interface styling.
+- `assets/renderer-inject.js`: idempotent DOM integration and cleanup.
+- `scripts/doctor-macos.sh`: signed-runtime, payload, and optional live-session self-check.
+- `references/qa-inventory.md`: release and visual acceptance criteria.
