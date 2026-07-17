@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "soft-family",
+  "name": "柔光相伴",
+  "brandSubtitle": "CODEX DREAM SKIN",
+  "tagline": "A calm workspace for creating with warmth.",
+  "quote": "CREATE WITH WARMTH",
+  "image": "assets/wallpaper.png",
+  "colors": {
+    "background": "#EEF6FB",
+    "panel": "#F8FBFD",
+    "panelAlt": "#EAF4FA",
+    "accent": "#7FB8D8",
+    "accentAlt": "#A9CBD9",
+    "secondary": "#C7DCE5",
+    "highlight": "#9B858D",
+    "text": "#2E4758",
+    "muted": "#6F8593",
+    "line": "rgba(127,184,216,.22)"
+  }
+}
