@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Codex Dream Skin Theme Manifest",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name", "version", "theme", "assets"],
+  "properties": {
+    "schemaVersion": {"type": "integer"},
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "version": {"type": "string"},
+    "theme": {"type": "string"},
+    "preview": {"type": "string"},
+    "assets": {"type": "object"}
+  }
+}
