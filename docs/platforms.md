@@ -28,9 +28,12 @@
 | 用途 | 路径 |
 |------|------|
 | 源码（本整理包） | `Codex-Dream-Skin/windows/` |
+| 安装后的受管运行时 | `%LOCALAPPDATA%\CodexDreamSkin\engine` |
 | 状态 / 日志 | `%LOCALAPPDATA%\CodexDreamSkin` |
 | Codex 配置 | `%USERPROFILE%\.codex\config.toml` |
 | 默认 CDP 端口 | 首选 `9335`，冲突时自动选空闲口（Mac 包默认从 `9341` 起） |
+
+Windows 启动、失败回滚与恢复重开均从已注册的 `OpenAI.Codex` 包清单解析 AppUserModelId，并通过系统应用包激活接口传递 CDP 参数；不会直接执行受 WindowsApps ACL 限制的可执行文件路径。
 
 ## 能力矩阵
 
@@ -72,7 +75,7 @@
 ### 平台差异
 
 - macOS 的选图脚本会把这些字段写入主题库，可通过 `--appearance`、`--focus-x`、`--focus-y`、`--safe-area`、`--task-mode` 设置。
-- Windows 安装会初始化 `%LOCALAPPDATA%\CodexDreamSkin\active-theme`、`themes` 与 `images`，并把「桥本有菜」同时设为首次默认和可切换的已保存主题。系统托盘支持更换背景、保存当前主题、从「已保存主题」切换、暂停和恢复；图片与 `theme.json` 保存在主题仓库中，不写进 Codex 的 `config.toml`。安装会保留用户已有的 `appearanceTheme`；仅在识别到旧版精确托管的浅色三元组时按备份迁移。
+- Windows 安装会把运行所需的 `assets/` 与 `scripts/` 原子复制到 `%LOCALAPPDATA%\CodexDreamSkin\engine`，所有快捷方式均指向该受管副本，因此安装后可移动或删除源码目录。安装还会初始化 `active-theme`、`themes` 与 `images`，并把「桥本有菜」同时设为首次默认和可切换的已保存主题。系统托盘支持更换背景、保存当前主题、从「已保存主题」切换、暂停和恢复；图片与 `theme.json` 保存在主题仓库中，不写进 Codex 的 `config.toml`。安装会保留用户已有的 `appearanceTheme`；仅在识别到旧版精确托管的浅色三元组时按备份迁移。
 - Windows 渲染器仍支持在注入前用 `window.__CODEX_DREAM_SKIN_CONFIG__` 提供内存级可选覆盖（形状同上，颜色覆盖使用 `palette.accent`），但普通用户应优先使用持久化主题仓库与托盘。
 
 ## 预设与图片类型

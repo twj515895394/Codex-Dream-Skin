@@ -4,6 +4,7 @@
 
 ### 新增
 
+- Windows 安装器会先校验并原子复制运行所需的 `assets/` 与 `scripts/` 到 `%LOCALAPPDATA%\CodexDreamSkin\engine`，启动、恢复和托盘快捷方式统一指向该受管副本；安装完成后可移动或删除源码克隆。重装前若旧托盘仍在运行，安装器会明确要求退出，避免新旧脚本混用。
 - 渲染层支持通用自适应图像主题：本地 Canvas 采样图像亮度、主色、焦点和比例，为壁纸层提供自适应色彩与构图建议；支持 `appearance: auto | light | dark`、`art.focusX/focusY`（`0..1`）、`art.safeArea: auto | left | right | center | none`、`art.taskMode: auto | ambient | banner | off`。外观壳仍由显式主题或原生外观信号决定。
 - 显式外观与艺术元数据优先于分析结果；超宽图默认任务横幅，普通比例图默认环境背景，`off` 可关闭任务页图像。分析完全在渲染器本地完成，不上传图片。
 - Windows 发行 payload 直接读取受管 `theme.json`，完整支持与 macOS 一致的外观、焦点、安全区和任务页模式契约，不再依赖预先设置的 renderer 全局变量。
@@ -13,6 +14,8 @@
 
 ### 修复
 
+- 保留 Codex 原生固定顶栏的定位与层级，避免打开任务侧边面板后开关被推出主区、导致面板无法关闭。
+- 暗色外观下，原生顶部菜单栏现在使用深色半透明可读性层，并提高菜单按钮与图标的文字对比度，避免浅色壁纸让导航项难以辨认。
 - 渲染层现在只在检测到完整 Codex 主界面壳层时启用皮肤；宠物等透明辅助窗口会主动清理主题背景与装饰节点，避免出现遮挡宠物的矩形背景框。
 - 16:9 及更宽图像现在作为侧栏与主区共享的单张整窗背景；首页、任务、插件、计划任务和 Pull Requests 路由使用同一透明顶栏与连续表面，不再在卡片或任务层重复裁切图片。
 - 移除主区原生顶部渐隐和 composer 后方底部渐隐；浅色与深色 composer 均只保留一个可读表面，避免出现双层输入框或不连续底板。
@@ -29,6 +32,10 @@
 - 安装不再把用户的 `appearanceTheme` 强制改成 `light`；检测到旧版精确托管的浅色三元组时才按已有备份安全迁移，当前安装的恢复也不会覆盖用户后来选择的外观。
 - `--verify`、`--once` 和 `--remove` 现在显式把预期 Browser ID 传入一次性目标发现，不再因引用越域的 CLI 变量而等待超时并导致启动验证回滚。
 - 记录中的 injector PID 若仍存活但身份不匹配，启动与恢复会保留 state 并中止，不再归档后继续操作未知进程。
+- Windows PowerShell 5.1 现在使用同目录临时备份调用 `File.Replace`，避免空备份参数被绑定为非法路径而导致现有 `config.toml` 无法更新。
+- 修复 Windows PowerShell 5.1 下注入器/Node 一旦向 stderr 输出（崩溃堆栈、超时报错、Node 警告）就把启动脚本炸成 `NativeCommandError` 的问题：现在原生命令统一经 `Invoke-DreamSkinNative` 执行，verify 失败时 `verify.log` 能真正写出本次输出与退出码，回滚清除注入的路径也不再被 stderr 干扰误判。
+- 带引号键名和 CRLF 的 `[desktop]` 配置现在可以逐字节往返恢复；新版 Codex 写入的非冲突 `[desktop.*]` 子表会原样保留，仅在子表与 Dream Skin 必须管理的标量键冲突时拒绝修改。
+- Codex 的启动、失败回滚和恢复重开统一通过已注册 Store 包清单中的 AppUserModelId 激活，不再直接执行可能被 WindowsApps 权限拒绝的 `ChatGPT.exe`；CDP 和自定义 profile 参数仍通过系统包激活接口传递。
 - 安装与 `-RestoreBaseTheme` 现在严格按 UTF-8 读取，保留原换行风格，并以无 BOM、同目录原子替换方式写回 `config.toml`，避免中文项目名称乱码或导致 Codex 无法启动。
 - 遇到带 BOM/无 BOM 的 UTF-16、NUL 字符、无效 UTF-8 或写入期间被其他程序改动的配置时停止修改，不再静默转码或覆盖较新的内容。
 - 安装会在当前注册包或 state 记录的旧 Codex 仍运行时明确提示先关闭；配置临时文件写完后会在原子替换前再次核对原始字节，进一步缩小并发覆盖窗口。
