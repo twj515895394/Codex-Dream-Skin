@@ -35,8 +35,6 @@ PACKAGE_BYTES="$(/usr/bin/stat -f '%z' "$PACKAGE")"
 [ "$PACKAGE_BYTES" -gt 0 ] && [ "$PACKAGE_BYTES" -le 67108864 ] \
   || fail "Theme package must be non-empty and no larger than 64 MB."
 
-# A .codex-theme file is a ZIP data package. Inspect names before extraction to
-# reject path traversal and executable payloads. The package itself never runs.
 archive_entries="$(/usr/bin/unzip -Z1 "$PACKAGE" 2>/dev/null)" \
   || fail "Theme package is not a readable ZIP archive."
 [ -n "$archive_entries" ] || fail "Theme package is empty."
@@ -68,8 +66,6 @@ trap cleanup EXIT
 /usr/bin/ditto -x -k "$PACKAGE" "$tmp/extracted" \
   || fail "Could not extract theme package."
 
-# Extracted links and special files are rejected even if their archive names
-# looked harmless.
 if /usr/bin/find "$tmp/extracted" -type l -print -quit | /usr/bin/grep -q .; then
   fail "Theme package must not contain symbolic links."
 fi
@@ -90,25 +86,32 @@ const [manifestPath, themePath] = process.argv.slice(2);
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const theme = JSON.parse(fs.readFileSync(themePath, 'utf8'));
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value);
+const rootFile = (value, label) => {
+  if (typeof value !== 'string' || !value || path.basename(value) !== value) {
+    throw new Error(`${label} must be a file in the package root`);
+  }
+  return value;
+};
 if (manifest?.schemaVersion !== 1) throw new Error('Unsupported manifest schemaVersion');
 if (!validId(manifest.id)) throw new Error('Invalid manifest id');
 if (manifest.theme !== 'theme.json') throw new Error('manifest.theme must be theme.json');
 if (theme?.schemaVersion !== 1) throw new Error('Unsupported theme schemaVersion');
 if (!validId(theme.id) || theme.id !== manifest.id) throw new Error('theme.id must match manifest.id');
-if (typeof theme.image !== 'string' || path.basename(theme.image) !== theme.image) {
-  throw new Error('theme.image must be a file in the package root');
-}
+const image = rootFile(theme.image, 'theme.image');
+const preview = manifest.preview == null || manifest.preview === '' ? '' : rootFile(manifest.preview, 'manifest.preview');
 if (typeof manifest.name !== 'string' || !manifest.name.trim()) throw new Error('Manifest name is required');
-process.stdout.write(`${manifest.id}\n${theme.image}\n${manifest.name.trim()}`);
+process.stdout.write(`${manifest.id}\n${image}\n${manifest.name.trim()}\n${preview}`);
 NODE
 )" || fail "Theme package metadata is invalid."
 THEME_ID="$(printf '%s\n' "$metadata" | /usr/bin/sed -n '1p')"
 THEME_IMAGE="$(printf '%s\n' "$metadata" | /usr/bin/sed -n '2p')"
 THEME_NAME="$(printf '%s\n' "$metadata" | /usr/bin/sed -n '3p')"
+THEME_PREVIEW="$(printf '%s\n' "$metadata" | /usr/bin/sed -n '4p')"
 [ -f "$root/$THEME_IMAGE" ] || fail "Theme image is missing: $THEME_IMAGE"
+if [ -n "$THEME_PREVIEW" ]; then
+  [ -f "$root/$THEME_PREVIEW" ] || fail "Theme preview is missing: $THEME_PREVIEW"
+fi
 
-# Reuse the existing injector validator so imported packages obey the same
-# schema, image, dimension, and path rules as bundled and saved themes.
 "$NODE" "$INJECTOR" --check-payload --theme-dir "$root" >/dev/null \
   || fail "Theme package failed Dream Skin payload validation."
 
@@ -120,7 +123,7 @@ staged="$tmp/$THEME_ID"
 /bin/cp "$root/theme.json" "$staged/theme.json"
 /bin/cp "$root/$THEME_IMAGE" "$staged/$THEME_IMAGE"
 /bin/cp "$root/manifest.json" "$staged/manifest.json"
-if [ -n "${THEME_PREVIEW:-}" ] && [ -f "$root/$THEME_PREVIEW" ]; then
+if [ -n "$THEME_PREVIEW" ]; then
   /bin/cp "$root/$THEME_PREVIEW" "$staged/$THEME_PREVIEW"
 fi
 /bin/chmod 600 "$staged"/*
