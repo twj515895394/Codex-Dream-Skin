@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "custom-theme-id",
+  "name": "Theme Name",
+  "brandSubtitle": "CODEX DREAM SKIN",
+  "tagline": "Create something wonderful.",
+  "projectPrefix": "选择项目 · ",
+  "projectLabel": "◉ 选择项目",
+  "statusText": "THEME ONLINE",
+  "quote": "CREATE WITHOUT LIMITS",
+  "image": "background.jpg",
+  "colors": {
+    "background": "#071116",
+    "panel": "#0b1a20",
+    "panelAlt": "#10272c",
+    "accent": "#7cff46",
+    "accentAlt": "#b8ff3d",
+    "secondary": "#36d7e8",
+    "highlight": "#642a8c",
+    "text": "#e9fff1",
+    "muted": "#9ebdb3",
+    "line": "rgba(124,255,70,.28)"
+  }
+}
