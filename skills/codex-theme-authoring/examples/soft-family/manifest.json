@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "soft-family",
+  "name": "柔光相伴",
+  "version": "1.0.0",
+  "description": "A warm low-fatigue Codex Dream Skin theme.",
+  "author": "Codex Dream Skin",
+  "preview": "assets/preview.png",
+  "theme": "theme.json",
+  "assets": {
+    "wallpaper": "assets/wallpaper.png"
+  }
+}
