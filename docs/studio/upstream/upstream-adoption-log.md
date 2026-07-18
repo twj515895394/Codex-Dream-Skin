@@ -28,6 +28,8 @@
 | `UPA-009` | `5a0349b15549e35350d808bec5afc6137ef3a87c` | 贡献指南和验证要求 | `adapt-adopt` | Phase 0 | Candidate | — | 需改写 Studio/上游跟踪规则 |
 | `UPA-010` | `b71316ec8ba98ddbe481118f980c5adfea5be78b` | Windows 用户安装文档 | `defer` | Phase 1/Release | Candidate | — | Studio UI 稳定后重写 |
 | `UPA-011` | `deb65b8b58fec7849562198383f4871b62b631f5` | Jinx 主题预览素材 | `defer` | Assets/Marketplace | Candidate | — | 需确认素材权利和产品定位 |
+| `UPA-012` | `19fa0342846219fb0476bfd648aa7f0f0019bb0b..dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c` | macOS Runtime 生命周期、状态/暂停和多入口一致性强化 | `adapt-adopt` | Phase 0 | Planned | — | Runtime Contract、并发冲突、崩溃恢复、macOS 实机 |
+| `UPA-013` | `19fa0342846219fb0476bfd648aa7f0f0019bb0b..dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c` | 预设目录整理和主题集合变化 | `defer/observe` | Phase 1 | Candidate | — | Theme Repository 枚举、损坏和来源变化测试 |
 
 ## 使用规则
 
