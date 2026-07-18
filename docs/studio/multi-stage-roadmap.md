@@ -1,351 +1,251 @@
 # Dream Skin Studio 多阶段开发路线
 
 > 文档级别：L0 路线骨架  
+> 主控入口：[`MASTER-PLAN.md`](./MASTER-PLAN.md)  
+> 详细实施：[`project-implementation-plan.md`](./project-implementation-plan.md)  
 > 原则：每个阶段进入开发前，必须在 `docs/studio/phases/` 下完成 L1 细化设计并通过阶段门禁。
 
 ## 1. 路线总览
 
 ```text
-Phase 0  基线整合与技术验证
+Phase 00  Foundation、Runtime API 与 Desktop Shell Spike
     ↓
-Phase 1  Theme Manager MVP
+Phase 01  Theme Manager MVP
     ↓
-Phase 2  统一主题编译与可信预览
+Phase 02  统一主题编译与可信预览
     ↓
-Phase 3  可视化 Theme Editor
+Phase 03  可视化 Theme Editor
     ↓
-Phase 4  AI Authoring 与素材工作流
+Phase 04  Asset Library 与 AI Authoring
     ↓
-Phase 5  Marketplace、更新与信任体系
+Phase 05  Marketplace、更新与信任体系
 ```
 
-这是一条依赖链，不建议跳过 Phase 2 直接做复杂编辑器，也不建议在 Theme Package、版本和签名模型稳定前建设 Marketplace。
+这是依赖链，不建议跳过 Phase 02 直接开发复杂 Editor，也不建议在 Theme Package、Schema、版本、兼容和回滚稳定前建设 Marketplace。
 
-## 2. Phase 0：基线整合与技术验证
+## 2. 上游策略
+
+当前 Studio 分支不以“消除与 `main` 的分叉”为阶段目标，也不要求定期 merge/rebase `main`。
+
+统一流程：
+
+```text
+读取 upstream-baseline.md
+    ↓
+比较 lastReviewedMainCommit..<current-main>
+    ↓
+分析新增 commit 和文件
+    ↓
+分类 direct-adopt / adapt-adopt / concept-rewrite / defer / reject
+    ↓
+登记 UPA Action 和 Work Item
+    ↓
+独立实施、测试和验收
+```
+
+每个 Phase 进入 Ready 前必须完成一次上游检查，但“已审查并决策”不等于“已合并 main”。
+
+## 3. Phase 00：Foundation、Runtime API 与 Desktop Shell Spike
 
 ### 目标
 
-为 Studio 开发建立可信基线，消除当前功能分支与 `main` 的分叉，验证 Desktop Shell 和 Runtime Adapter 路线。
+建立可安全开发 Studio 的工程基线，证明 Studio 可以通过结构化接口读取 Runtime 状态、列出主题、执行一次安全 Apply、Verify 和 Restore。
 
-### 必须完成
+### 核心交付
 
-- 将 `feat/codex-theme-import-mvp` 同步到最新 `main`；
-- 解决 macOS installer、文档和 CI 冲突；
-- 为 `.codex-theme` 导入增加自动测试；
-- 执行 macOS 实机导入、切换、重启、恢复测试；
-- 执行 Windows 回归测试；
-- 形成 Tauri 2 技术 Spike；
-- 定义 Platform Runtime JSON API v1 草案；
-- 确认 Studio 的签名、安装、升级和 sidecar 方案；
-- 编写 ADR：Desktop Shell 技术选择。
+- `.codex-theme` importer 自动化回归；
+- Runtime JSON API v1；
+- 统一错误模型和 capability；
+- Studio、SwiftBar、Tray、CLI operation lock；
+- 受管 Runtime 分发、升级和回滚模型；
+- Tauri/Electron/Native Shell 技术 Spike；
+- Desktop Shell ADR；
+- 最小 status → list → apply → verify → restore Vertical Slice；
+- macOS 和 Windows 基线验收。
 
-### 交付物
+### 上游采用重点
 
-```text
-apps/studio-spike/                    # 可删除的技术验证项目
-core/contracts/runtime-api-v1.*       # 契约草案
-macos/scripts/* --json                # 至少一个示范操作
-windows/scripts/* -Json               # 至少一个示范操作
-docs/studio/phases/phase-00-.../
-```
+- CI 和跨平台编码规则；
+- PowerShell 5.1 stderr/exit code 保真；
+- 配置文件和 Appx 包身份；
+- staging/hash/backup/rollback 受管 Runtime；
+- 原子替换提交前后失败语义；
+- 原生 Header、侧面板和深色菜单兼容。
 
-### 验收
+### 阶段门禁
 
-- CI 恢复绿色；
-- 当前脚本功能不回退；
-- Studio Spike 能读取平台状态、列出主题并调用一次安全 Apply；
-- UI 不能任意执行 Shell 字符串；
-- 失败结果能以结构化错误返回。
+- Runtime API 契约已评审；
+- UI 无任意 Shell 字符串执行；
+- importer 自动测试存在；
+- Desktop Shell ADR 已接受；
+- 双平台核心 Contract Test 可执行；
+- 现有 Runtime 能力不回退。
 
-### 本阶段不做
+## 4. Phase 01：Theme Manager MVP
 
-- 正式主题管理 UI；
-- Theme Schema v2；
-- Live Preview；
-- AI 与 Marketplace。
+### 目标
 
-## 3. Phase 1：Theme Manager MVP
-
-### 产品目标
-
-让普通用户完全通过 Dream Skin Studio 完成：
+让普通用户不打开终端即可完成：
 
 ```text
-查看主题 → 导入 → 查看详情 → 应用 → 切换 → 导出 → 删除 → 恢复
+查看主题 → 导入 → 查看详情 → 应用 → 切换 → 导出 → 删除 → Verify → Restore
 ```
 
-### 功能范围
+### 核心交付
 
-#### Theme Library
+- Theme Repository；
+- Theme Library 卡片、搜索、筛选和状态；
+- 兼容无 manifest/preview 的旧主题；
+- 导入、应用、复制、重命名、导出和删除；
+- 当前主题、损坏和不兼容状态；
+- Runtime Status、Doctor、Verify、日志摘要；
+- SwiftBar/Tray/Studio 状态一致性。
 
-- 卡片列表；
-- 内置、导入、自定义来源标识；
-- 当前主题标识；
-- 搜索与简单筛选；
-- 主题详情；
-- preview 图片显示；
-- 损坏、不兼容和缺失预览状态。
+### 约束
 
-#### Theme Operations
+- 文件系统继续是主题事实来源；
+- 删除当前主题前必须切换或 Restore；
+- 同 ID 导入提供覆盖、保留副本或取消；
+- Package preview 不冒充完整实机预览；
+- Runtime 不可用时只暴露安全可执行操作。
 
-- 导入 `.codex-theme`；
-- 应用；
-- 复制；
-- 重命名显示名；
-- 导出 `.codex-theme`；
-- 删除；
-- 打开主题所在目录；
-- 完全恢复。
+## 5. Phase 02：统一主题编译与可信预览
 
-#### Runtime Status
+### 目标
 
-- Codex 是否运行；
-- Skin active/paused/off；
-- 当前主题；
-- Runtime 版本；
-- Doctor/Verify 入口；
-- 日志打开与复制诊断摘要。
+建立设计、预览和实机之间的单一来源，解决概念效果与真实渲染不一致的问题。
 
-### 技术重点
+### 核心交付
 
-- Studio 仅封装现有 Runtime；
-- Theme Repository 兼容无 manifest 的旧主题；
-- 删除当前主题时要求先切换或恢复；
-- 所有修改使用锁和 staging；
-- Theme Card 的 preview 只展示包内预览或安全生成缩略图，不声称是完整实机效果。
-
-### 验收
-
-- macOS 用户不打开终端即可完成整个主题管理闭环；
-- Windows 至少实现列表、应用、删除和恢复的同语义版本；
-- v1 preset/custom/imported 主题均能被枚举；
-- 导入错误在 UI 中可理解；
-- 删除和覆盖可恢复；
-- SwiftBar/Tray 与 Studio 操作后状态一致。
-
-### 本阶段不做
-
-- 可视化调色编辑；
-- 模拟 Codex 的完整实时预览；
+- Canonical Theme Model；
+- v1 Normalizer；
 - Theme Schema v2；
-- AI 与在线市场。
-
-## 4. Phase 2：统一主题编译与可信预览
-
-### 产品目标
-
-建立设计、预览和实机之间的单一来源，解决当前主题概念图与实际渲染不一致的问题。
-
-### 功能范围
-
-- Theme Normalizer；
 - Theme Compiler；
-- v1 兼容映射；
-- Theme Schema v2；
 - Light/Dark 独立 token；
 - Home/Coding Fixture Preview；
-- 多尺寸预览；
-- Preview 诊断；
+- Surface、Overlay、Blur、Shadow、Radius tokens；
 - Live Preview Session；
-- Apply/Commit/Revert。
+- Commit / Revert / timeout / crash recovery；
+- Preview 与实机一致性基线。
 
-### Theme Schema v2 第一批能力
-
-- `modes.light` / `modes.dark`；
-- page/panel/panelAlt/input/text/muted/border；
-- homeCard/composer/codeBlock/attachment/userMessage/popover；
-- home/task overlays；
-- opacity/blur/radius/shadow；
-- art focus/safe area/task mode；
-- Runtime compatibility。
-
-### 技术重点
-
-- Preview 和 Codex Renderer 共用 compiler 产物；
-- Fixture DOM 只模拟结构，不单独推导主题；
-- Live Preview 使用独立临时目录；
-- Studio 崩溃或超时自动恢复原主题；
-- v2 不允许任意 CSS/JS；
-- 编译结果有版本号和诊断。
-
-### 验收
-
-- 同一主题在 Fixture Preview 与实机关键 token 一致；
-- Light/Dark 能独立设置；
-- Coding 页面有稳定阅读层级；
-- Live Preview 不覆盖正式主题；
-- v1 主题继续正常应用；
-- v2 主题可导出、重新导入并保持效果。
-
-### 本阶段不做
-
-- 完整可视化编辑器；
-- AI 自动生成；
-- Marketplace。
-
-## 5. Phase 3：可视化 Theme Editor
-
-### 产品目标
-
-用户可以在 Studio 中从图片或现有主题创建完整主题，并实时查看 Light/Dark、Home/Coding 场景。
-
-### 功能范围
-
-- 新建主题向导；
-- 从现有主题复制；
-- 背景图导入和裁切/焦点设置；
-- safe area 和 task mode；
-- Light/Dark 调色；
-- Surface/Overlay/Shadow/Blur/Radius；
-- 组件级样式；
-- 文案与主题元数据；
-- Undo/Redo；
-- Draft 自动保存；
-- 对比度和可读性检查；
-- 保存为新版本；
-- 导出 `.codex-theme`。
-
-### 编辑器交互骨架
+### 不可违反
 
 ```text
-左侧：属性面板
-中间：场景 Preview
-右侧：诊断、版本和主题信息
-顶部：场景、Light/Dark、撤销、试用、保存、导出
+Theme Source
+    ↓ normalize / migrate
+Canonical Model
+    ↓ compile
+Compiled Artifact
+    ├── Fixture Preview
+    ├── Live Preview
+    └── Runtime Apply
 ```
 
-### 技术重点
+禁止 Studio Preview 和 Runtime 分别推导主题。
 
-- Editor 只修改 Canonical Theme Model；
-- 所有输入有范围限制；
-- Draft 与正式主题分离；
-- 保存时生成 manifest、theme、preview 和完整性信息；
-- 冲突检测：外部文件变化时不静默覆盖。
+## 6. Phase 03：可视化 Theme Editor
 
-### 验收
+### 目标
 
-- 从一张背景图到可导入主题不需要手写 JSON；
-- Undo/Redo 和崩溃恢复有效；
-- 导出的包能在另一台机器导入；
-- Editor Preview、Live Preview 和最终 Apply 不出现结构性差异；
-- 视觉验收覆盖 Home Light、Home Dark、Coding Light、Coding Dark。
+用户能够从图片或已有主题创建、编辑、试用、保存和导出主题，不手写 JSON。
 
-## 6. Phase 4：AI Authoring 与素材工作流
+### 核心交付
 
-### 产品目标
+- 新建主题向导；
+- 背景图、焦点和 safe area；
+- Light/Dark 调色；
+- Home/Coding 与组件级样式；
+- Overlay、Blur、Shadow、Radius；
+- Undo/Redo；
+- Draft 自动保存和崩溃恢复；
+- 可读性诊断；
+- Live Preview；
+- 保存副本、版本和 `.codex-theme` 导出。
 
-让 AI 帮助用户从图片、描述或已有主题生成可靠初稿，但用户始终保有控制权。
+### 阶段门禁
 
-### 功能范围
+- Schema v2 稳定；
+- Compiler 版本化；
+- Fixture 和 Live Preview 可用；
+- Draft 与正式主题事务隔离；
+- 外部文件变化不会被静默覆盖。
 
+## 7. Phase 04：Asset Library 与 AI Authoring
+
+### 目标
+
+建立素材资产管理和本地优先的 AI 辅助创作，让 AI 生成可靠 Draft，但不成为主题运行依赖。
+
+### 核心交付
+
+- source、prepared variants、thumbnail 和 metadata；
+- hash、尺寸、来源、授权、derivedFrom 和 AI 声明；
 - 本地图像分析；
-- 自动 palette；
-- 自动 Light/Dark；
-- safe area 和 focus 建议；
-- 对比度修复建议；
-- 一键生成主题初稿；
+- palette、focus、safe area 和 Light/Dark 建议；
+- 对比度修复；
 - 主题变体；
-- 背景扩图、去 UI、模糊和轻量处理；
-- 素材库和来源信息；
-- 可选外部模型 Provider；
-- 生成历史与可复现参数。
+- 可选外部 Provider；
+- 上传确认、密钥安全存储和 provenance；
+- 所有 AI 修改进入 Draft 并可撤销。
 
-### 隐私要求
+## 8. Phase 05：Marketplace、更新与信任体系
 
-- 本地分析默认开启；
-- 外部上传默认关闭；
-- 上传前显示 Provider、数据类型和用途；
-- 不上传 Codex 对话、项目名或用户目录；
-- AI 生成素材记录 provenance；
-- 人物、IP 和商业授权有提示。
+### 目标
 
-### 验收
-
-- 无网络时仍能完成基础自动主题生成；
-- 外部 Provider 未配置时不影响 Studio；
-- AI 结果先进入 Draft，不直接覆盖当前主题；
-- 每项自动修改可撤销；
-- 生成主题通过 Compiler 和可读性校验。
-
-## 7. Phase 5：Marketplace、更新与信任体系
-
-### 产品目标
-
-支持安全浏览、安装和更新第三方主题，形成可持续主题生态。
+安全浏览、安装、更新、回滚和撤回第三方主题。
 
 ### 前置条件
 
-- Theme Package 稳定；
-- Theme Schema v2 稳定；
-- Runtime compatibility 模型稳定；
-- 签名和版本策略完成；
-- 删除、更新和回滚可靠。
+- Package、Schema v2 和 Compiler 稳定；
+- Runtime compatibility 稳定；
+- 签名和作者身份模型完成；
+- 更新、删除和回滚可靠；
+- 素材权利字段稳定。
 
-### 功能范围
+### 核心交付
 
 - Catalog；
-- 搜索、标签、排序；
-- 详情和截图；
-- 安装与更新；
-- 收藏；
-- 作者与授权信息；
-- Hash/Signature；
+- 搜索、标签和排序；
+- 作者、授权和截图；
+- Install / Update / Rollback；
+- Hash / Signature；
 - 兼容性过滤；
-- 已撤销或下架包提示；
-- 更新回滚；
-- 离线缓存。
+- 撤销、下架和举报；
+- 离线缓存；
+- Marketplace 网络总开关。
 
-### 验收
+Marketplace 下载包仍必须经过本地 importer，Catalog 不能授予执行权限。
 
-- Marketplace 包仍是纯数据；
-- 下载后独立校验，Catalog 不能绕过本地 importer；
-- 更新失败不会破坏旧版本；
-- 不兼容主题无法误应用；
-- 第三方内容有来源和信任状态；
-- 用户可完全关闭 Marketplace 网络访问。
+## 9. 跨阶段基础工程
 
-## 8. 跨阶段基础工程
-
-每个阶段都要持续维护：
+每个阶段持续维护：
 
 - 双平台 CI；
-- Schema 测试；
+- Schema / Package / Compiler 测试；
+- Runtime Adapter Contract Test；
 - Import/Export round-trip；
-- Runtime Adapter contract tests；
-- 路径与包安全测试；
+- path safety；
+- operation lock 和事务失败注入；
 - Fixture visual regression；
-- 实机 Verify；
+- macOS/Windows 实机 Verify；
 - 日志脱敏；
-- 文档和 Changelog；
-- Release rollback。
+- 文档、Changelog 和 Work Register；
+- 安装、升级、降级和 Restore。
 
-## 9. 依赖关系
+## 10. 状态与执行来源
+
+路线只表达阶段依赖，不记录每天的执行状态。
+
+- 当前 Work Item：[`work-register.md`](./work-register.md)；
+- 详细实施计划：[`project-implementation-plan.md`](./project-implementation-plan.md)；
+- 统一规则：[`engineering-rulebook.md`](./engineering-rulebook.md)；
+- 阶段设计：[`phases/README.md`](./phases/README.md)；
+- 上游节点：[`upstream/upstream-baseline.md`](./upstream/upstream-baseline.md)。
+
+阶段状态统一：
 
 ```text
-Theme Manager
-  └──依赖：现有主题库 + 平台 Runtime
-
-可信 Preview
-  └──依赖：Theme Compiler + Schema v2
-
-Editor
-  └──依赖：Preview + Draft + Compiler
-
-AI Authoring
-  └──依赖：Editor + Asset Library + Compiler
-
-Marketplace
-  └──依赖：Package + Version + Signature + Compatibility
+Planned → Ready → In Progress → Verification → Done
 ```
 
-## 10. 阶段优先级建议
-
-最优执行顺序：
-
-1. Phase 0 不可跳过；
-2. Phase 1 先解决“有没有 Studio”的问题；
-3. Phase 2 解决“预览是否可信”的问题；
-4. Phase 3 解决“能否真正创作”的问题；
-5. Phase 4、5 在核心产品稳定后推进。
-
-不建议在 Phase 1 同时加入复杂编辑器、AI 和 Marketplace，否则会把当前可靠 Runtime 淹没在一轮难以验证的大重构中。
+任何阶段缺少安全、迁移、回滚、测试、实机或上游采用决策时，不得进入 Ready 或 Done。
