@@ -7,7 +7,7 @@ studioBranch: feat/codex-theme-import-mvp
 previousReviewedUpstreamCommit: 31160026800564e0fe228ca44d956479b66d1164
 lastReviewedUpstreamCommit: 19fa0342846219fb0476bfd648aa7f0f0019bb0b
 studioCommitAtReviewStart: 2174f597f38c5c1ea19403480fa88256835b0a33
-studioCommitAfterReviewArtifacts: 089ac65d36d188a8e5c1b9fa7b73f54abb841065
+studioCommitAfterReviewArtifacts: e8c94d265e60e24ee3cecfc177984b2d044c615b
 lastReviewId: UPR-20260718-001
 lastReviewDate: 2026-07-18
 lastReviewReport: reviews/2026-07-18-main-review.md
