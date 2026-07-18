@@ -4,13 +4,13 @@ trackingId: studio-upstream-main
 repository: twj515895394/Codex-Dream-Skin
 upstreamRef: main
 studioBranch: feat/codex-theme-import-mvp
-previousReviewedUpstreamCommit: 31160026800564e0fe228ca44d956479b66d1164
-lastReviewedUpstreamCommit: 19fa0342846219fb0476bfd648aa7f0f0019bb0b
-studioCommitAtReviewStart: 2174f597f38c5c1ea19403480fa88256835b0a33
-studioCommitAfterReviewArtifacts: e8c94d265e60e24ee3cecfc177984b2d044c615b
-lastReviewId: UPR-20260718-001
-lastReviewDate: 2026-07-18
-lastReviewReport: reviews/2026-07-18-main-review.md
+previousReviewedUpstreamCommit: 19fa0342846219fb0476bfd648aa7f0f0019bb0b
+lastReviewedUpstreamCommit: dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c
+studioCommitAtReviewStart: 5d3243c21715080072b4007ac5da10e6d3a7f185
+studioCommitAfterReviewArtifacts: 07c2a7872f31c940c1e3e1bcab71fa9eb659308c
+lastReviewId: UPR-20260719-001
+lastReviewDate: 2026-07-19
+lastReviewReport: reviews/2026-07-19-main-review.md
 reviewStatus: complete
 ---
 
@@ -22,10 +22,10 @@ reviewStatus: complete
 
 | 字段 | 值 |
 | --- | --- |
-| 已审查起点 | `31160026800564e0fe228ca44d956479b66d1164` |
-| 已审查终点 | `19fa0342846219fb0476bfd648aa7f0f0019bb0b` |
-| Review | `UPR-20260718-001` |
-| 报告 | [`reviews/2026-07-18-main-review.md`](./reviews/2026-07-18-main-review.md) |
+| 已审查起点 | `19fa0342846219fb0476bfd648aa7f0f0019bb0b` |
+| 已审查终点 | `dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c` |
+| Review | `UPR-20260719-001` |
+| 报告 | [`reviews/2026-07-19-main-review.md`](./reviews/2026-07-19-main-review.md) |
 | 状态 | Complete |
 
 ## 下一次执行
@@ -33,7 +33,7 @@ reviewStatus: complete
 先读取当前 `main` SHA，随后比较：
 
 ```text
-19fa0342846219fb0476bfd648aa7f0f0019bb0b..<current-main-sha>
+dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c..<current-main-sha>
 ```
 
 只有完成以下步骤后，才能推进 `lastReviewedUpstreamCommit`：
@@ -50,7 +50,7 @@ reviewStatus: complete
 若当前 `main` 仍为：
 
 ```text
-19fa0342846219fb0476bfd648aa7f0f0019bb0b
+dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c
 ```
 
 则本次没有新的 commit 需要分析。可以记录一次检查日期，但不改变起止节点，也不重复生成同范围报告。
