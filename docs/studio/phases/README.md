@@ -2,12 +2,14 @@
 
 本目录用于保存每个阶段开发前的细化设计、开发过程 ADR、验收记录和已知问题。
 
+所有阶段状态和 Work Item 以 [`../MASTER-PLAN.md`](../MASTER-PLAN.md) 与 [`../work-register.md`](../work-register.md) 为主控来源；本文件负责阶段文档入口和进入开发前必须回答的问题。
+
 ## 1. 阶段状态
 
 | Phase | 名称 | 当前状态 | 细化设计 | 开发前置条件 |
 | --- | --- | --- | --- | --- |
-| 00 | 基线整合与技术验证 | Planned | 未开始 | 当前 `.codex-theme` MVP 实机验证完成；确认同步 `main` 方案 |
-| 01 | Theme Manager MVP | Planned | 未开始 | Phase 00 Done；Runtime JSON API 可用 |
+| 00 | Foundation、Runtime API 与 Desktop Shell Spike | Planned | 未开始 | `.codex-theme` MVP 实机验证完成；首次上游 Review 完成；主控文档与 Work Register 建立 |
+| 01 | Theme Manager MVP | Planned | 未开始 | Phase 00 Done；Runtime JSON API、operation lock 与 Desktop Shell 可用 |
 | 02 | 统一主题编译与可信预览 | Planned | 未开始 | Phase 01 Done；Theme Repository 稳定 |
 | 03 | 可视化 Theme Editor | Planned | 未开始 | Phase 02 Done；Schema v2 与 Compiler 稳定 |
 | 04 | AI Authoring 与素材工作流 | Planned | 未开始 | Phase 03 Done；Draft 与 Asset Library 稳定 |
@@ -27,22 +29,34 @@ phases/
 └── phase-05-marketplace-and-trust/
 ```
 
-每个目录使用 [`../phase-design-and-delivery-template.md`](../phase-design-and-delivery-template.md) 作为基础。
+每个目录使用 [`../phase-design-and-delivery-template.md`](../phase-design-and-delivery-template.md) 作为基础，并填写：
+
+```yaml
+baselineBranch:
+baselineCommit:
+upstreamReviewId:
+reviewedMainCommit:
+relatedUpstreamActions: []
+```
+
+阶段进入 Ready 不要求 merge/rebase `main`，但必须完成从上一次节点续接的上游检查并形成采用决策。
 
 ## 3. Phase 00 需要回答的问题
 
 在写代码前必须确认：
 
-1. `feat/codex-theme-import-mvp` 如何同步最新 `main`；
+1. 当前 Studio 分支与 `main` 的连续 Review 节点是什么，本阶段需要采用或拒绝哪些上游能力；
 2. `.codex-theme` importer 的自动化测试如何补齐；
-3. Tauri 2 是否满足 macOS/Windows 签名、安装、sidecar 和自动更新要求；
+3. Runtime JSON API 的版本、操作、错误码和 capability 结构；
 4. Studio 如何安全调用现有 Shell/PowerShell；
-5. Runtime JSON API 的版本、错误码和 capability 结构；
-6. Studio、SwiftBar、Tray 和 CLI 如何共享操作锁；
-7. 开发、测试和发布的目录结构；
-8. Studio 安装后是否携带 Runtime，还是连接已有安装；
-9. macOS 与 Windows 的升级/降级策略；
-10. 第一版 Studio 是否先 macOS 可用、Windows 保持 CLI/Tray，还是双平台同时发布。
+5. Studio、SwiftBar、Tray 和 CLI 如何共享 operation lock；
+6. 受管 Runtime 如何 staging、校验、发布、升级和回滚；
+7. Tauri 2 是否满足 macOS/Windows 签名、安装、sidecar 和自动更新要求；
+8. 开发、测试和发布的目录结构；
+9. Studio 安装后是否携带 Runtime，还是连接已有安装；
+10. macOS 与 Windows 的升级/降级策略；
+11. 第一版 Studio 是否先 macOS 可用、Windows 保持 CLI/Tray，还是双平台同时发布；
+12. 最小 Vertical Slice 如何完成 status → list → apply → verify → restore。
 
 ## 4. Phase 01 需要回答的问题
 
@@ -113,7 +127,7 @@ phases/
 
 ```text
 Planned
-  ↓ 完成阶段详细设计与评审
+  ↓ 完成阶段详细设计、上游 Review 和评审
 Ready
   ↓ 开始开发
 In Progress
@@ -123,4 +137,11 @@ Verification
 Done
 ```
 
-任何阶段若缺少迁移、回滚、安全或测试设计，不得标记为 `Ready`。
+任何阶段若缺少迁移、回滚、安全、测试或上游采用决策，不得标记为 `Ready`。
+
+阶段状态变化时必须同时更新：
+
+- 本文件；
+- `../work-register.md`；
+- 当前阶段 README；
+- 需要时更新 `../MASTER-PLAN.md` 和 `../project-implementation-plan.md`。
