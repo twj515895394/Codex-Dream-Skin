@@ -769,7 +769,90 @@ CRLF_BACKUP="$TMP/config-crlf-backup.json"
 "$NODE" "$ROOT/scripts/theme-config.mjs" restore "$CRLF_CONFIG" "$CRLF_BACKUP" >/dev/null
 /usr/bin/cmp -s "$CRLF_CONFIG" "$TMP/original-crlf.toml"
 
+# Verification of .codex-theme package creation, import, --no-apply, and security rejections
+IMPORT_TEST_HOME="$TMP/import-test-home"
+IMPORT_STATE="$IMPORT_TEST_HOME/Library/Application Support/CodexDreamSkinStudio"
+/bin/mkdir -p "$TMP/pkg-valid" "$IMPORT_STATE"
+/bin/cp "$ROOT/assets/portal-hero.png" "$TMP/pkg-valid/background.png"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"valid-imported-theme","name":"测试导入主题","version":"1.0.0","theme":"theme.json"}' \
+  > "$TMP/pkg-valid/manifest.json"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"valid-imported-theme","name":"测试导入主题","image":"background.png"}' \
+  > "$TMP/pkg-valid/theme.json"
+(cd "$TMP/pkg-valid" && /usr/bin/zip -q -r "$TMP/valid.codex-theme" manifest.json theme.json background.png)
+
+/usr/bin/env HOME="$IMPORT_TEST_HOME" NODE="$NODE" \
+  "$ROOT/scripts/import-theme-macos.sh" --file "$TMP/valid.codex-theme" --no-apply >/dev/null
+[ -f "$IMPORT_STATE/themes/valid-imported-theme/theme.json" ]
+
+/usr/bin/env HOME="$IMPORT_TEST_HOME" NODE="$NODE" \
+  "$ROOT/scripts/switch-theme-macos.sh" --id valid-imported-theme --no-apply >/dev/null
+[ -f "$IMPORT_STATE/theme/theme.json" ]
+
+/bin/mkdir -p "$TMP/pkg-no-apply"
+/bin/cp "$ROOT/assets/portal-hero.png" "$TMP/pkg-no-apply/background.png"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"no-apply-theme","name":"仅导入主题","version":"1.0.0","theme":"theme.json"}' \
+  > "$TMP/pkg-no-apply/manifest.json"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"no-apply-theme","name":"仅导入主题","image":"background.png"}' \
+  > "$TMP/pkg-no-apply/theme.json"
+(cd "$TMP/pkg-no-apply" && /usr/bin/zip -q -r "$TMP/no-apply.codex-theme" manifest.json theme.json background.png)
+
+/usr/bin/env HOME="$IMPORT_TEST_HOME" NODE="$NODE" \
+  "$ROOT/scripts/import-theme-macos.sh" --file "$TMP/no-apply.codex-theme" --no-apply >/dev/null
+[ -f "$IMPORT_STATE/themes/no-apply-theme/theme.json" ]
+"$NODE" -e '
+  const theme = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  if (theme.id !== "valid-imported-theme") process.exit(1);
+' "$IMPORT_STATE/theme/theme.json"
+
+assert_import_rejected() {
+  local label="$1"
+  local pkg_file="$2"
+  if /usr/bin/env HOME="$IMPORT_TEST_HOME" NODE="$NODE" \
+    "$ROOT/scripts/import-theme-macos.sh" --file "$pkg_file" >/dev/null 2>&1; then
+    printf 'import-theme unexpectedly accepted invalid %s package.\n' "$label" >&2
+    exit 1
+  fi
+}
+
+/bin/mkdir -p "$TMP/pkg-executable"
+/bin/cp "$ROOT/assets/portal-hero.png" "$TMP/pkg-executable/background.png"
+/usr/bin/printf '#!/bin/bash\necho pwned\n' > "$TMP/pkg-executable/malicious.sh"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"exec-theme","name":"恶意脚本包","theme":"theme.json"}' \
+  > "$TMP/pkg-executable/manifest.json"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"exec-theme","name":"恶意脚本包","image":"background.png"}' \
+  > "$TMP/pkg-executable/theme.json"
+(cd "$TMP/pkg-executable" && /usr/bin/zip -q -r "$TMP/executable.codex-theme" manifest.json theme.json background.png malicious.sh)
+assert_import_rejected executable "$TMP/executable.codex-theme"
+
+/bin/mkdir -p "$TMP/pkg-id-mismatch"
+/bin/cp "$ROOT/assets/portal-hero.png" "$TMP/pkg-id-mismatch/background.png"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"manifest-id","name":"ID不匹配","theme":"theme.json"}' \
+  > "$TMP/pkg-id-mismatch/manifest.json"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"theme-id","name":"ID不匹配","image":"background.png"}' \
+  > "$TMP/pkg-id-mismatch/theme.json"
+(cd "$TMP/pkg-id-mismatch" && /usr/bin/zip -q -r "$TMP/id-mismatch.codex-theme" manifest.json theme.json background.png)
+assert_import_rejected id-mismatch "$TMP/id-mismatch.codex-theme"
+
+/bin/mkdir -p "$TMP/pkg-control-char"
+/bin/cp "$ROOT/assets/portal-hero.png" "$TMP/pkg-control-char/background.png"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"ctrl-char-theme","name":"换行\n名称","theme":"theme.json"}' \
+  > "$TMP/pkg-control-char/manifest.json"
+/usr/bin/printf '%s\n' \
+  '{"schemaVersion":1,"id":"ctrl-char-theme","name":"换行\n名称","image":"background.png"}' \
+  > "$TMP/pkg-control-char/theme.json"
+(cd "$TMP/pkg-control-char" && /usr/bin/zip -q -r "$TMP/control-char.codex-theme" manifest.json theme.json background.png)
+assert_import_rejected control-char "$TMP/control-char.codex-theme"
+
 /usr/bin/env -u HOME /bin/bash -c '. "$1/scripts/common-macos.sh"; [ -n "$HOME" ] && [ "$SKIN_VERSION" = "1.2.0" ]' _ "$ROOT"
 "$ROOT/scripts/doctor-macos.sh" >/dev/null
 
-printf 'PASS: syntax, payload, bundled presets, preset seeding, runtime-state safety, custom-theme, config round-trips, HOME recovery, signature, and doctor checks.\n'
+printf 'PASS: syntax, payload, bundled presets, preset seeding, runtime-state safety, custom-theme, config round-trips, HOME recovery, signature, import-theme, and doctor checks.\n'

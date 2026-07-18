@@ -13,6 +13,12 @@ done
 
 discover_codex_app
 require_macos_runtime
+ensure_state_root
+seed_bundled_presets
+if [ ! -f "$THEME_DIR/theme.json" ]; then
+  "$SCRIPT_DIR/switch-theme-macos.sh" --id preset-midnight-aurora --no-apply >/dev/null
+fi
+
 [ -f "$CONFIG_PATH" ] || fail "Codex config not found: $CONFIG_PATH"
 for required in \
   "$PROJECT_ROOT/assets/dream-skin.css" \
