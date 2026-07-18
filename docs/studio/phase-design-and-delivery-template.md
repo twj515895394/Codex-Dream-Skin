@@ -32,7 +32,9 @@ phase-XX-name/
 
 - 状态：Draft | Ready | In Progress | Verification | Done | Paused
 - Owner：
-- 基线分支/Commit：
+- Studio 基线分支/Commit：
+- 最近上游 Review ID：
+- 最近已审查 main Commit：
 - 目标版本：
 - 依赖阶段：
 - 计划开始：
@@ -47,6 +49,8 @@ phase-XX-name/
 ## 明确不做
 
 ## 交付物
+
+## 上游采用决策
 
 ## 阶段门禁
 ```
@@ -108,7 +112,7 @@ phase-XX-name/
 - 正常流程；
 - 空状态；
 - 加载状态；
-- 无权限/环境不满足；
+- 无权限或环境不满足；
 - 数据损坏；
 - 操作冲突；
 - 用户取消；
@@ -145,7 +149,7 @@ initial / loading / ready / empty / warning / error / disabled / offline
 
 ## 5. 技术设计模板
 
-### 5.1 当前基线
+### 5.1 当前 Studio 基线
 
 列出本阶段开始时真实存在的：
 
@@ -154,9 +158,38 @@ initial / loading / ready / empty / warning / error / disabled / offline
 - Schema 版本；
 - 状态目录；
 - CI；
-- 已知缺口。
+- 已知缺口；
+- Studio 分支和 commit。
 
-### 5.2 目标架构
+### 5.2 上游 `main` Review
+
+每个 Phase 进入 `Ready` 前，必须读取：
+
+- `docs/studio/upstream/upstream-baseline.md`；
+- 最近一份 `docs/studio/upstream/reviews/*-main-review.md`；
+- `docs/studio/upstream/upstream-adoption-log.md`。
+
+阶段文档必须记录：
+
+```yaml
+upstreamReviewId: UPR-YYYYMMDD-NNN
+reviewedMainCommit: <sha>
+relevantActions:
+  - UPA-XXX
+notAdopted:
+  - commit: <sha>
+    reason: <原因>
+```
+
+规则：
+
+1. 若 `main` 已经前进，先完成新的 Review，再进入开发；
+2. Review 只要求形成采用决策，不要求 merge/rebase `main`；
+3. 计划采用的能力必须进入本阶段技术设计、风险和测试；
+4. 上游迁移必须使用独立提交，不能与阶段无关代码混合；
+5. `upstream-baseline.md` 的 commit 游标是唯一续接节点，不能用日期替代。
+
+### 5.3 目标架构
 
 包含：
 
@@ -167,7 +200,7 @@ initial / loading / ready / empty / warning / error / disabled / offline
 - 失败恢复；
 - 跨平台差异。
 
-### 5.3 接口契约
+### 5.4 接口契约
 
 所有 Studio → Runtime 调用必须定义结构化输入输出。
 
@@ -201,35 +234,36 @@ initial / loading / ready / empty / warning / error / disabled / offline
 }
 ```
 
-禁止 UI 解析不稳定的人类可读日志来判断成功。
+禁止 UI 解析不稳定的人类可读日志来判断成功。Adapter 必须保留真实退出码，把 stdout、stderr 和稳定 error code 分开处理。
 
-### 5.4 数据模型
+### 5.5 数据模型
 
 说明：
 
-- 新增字段；
-- 默认值；
-- 唯一键；
-- 时间字段；
-- 路径；
-- hash；
-- 版本；
+- 新增字段和默认值；
+- 唯一键、时间字段和版本；
+- 文件路径和 hash；
 - 未知字段策略；
 - v1/v2 兼容；
 - 数据库与文件系统谁是事实来源。
 
-### 5.5 迁移策略
+### 5.6 迁移与事务策略
 
 每项迁移必须定义：
 
 ```text
-Detect → Backup → Migrate → Validate → Commit → Cleanup
-                         ↘ Failure → Restore
+Detect → Backup → Stage → Validate → Commit → Cleanup
+                                  ↘ Failure before commit → Restore
 ```
+
+必须区分：
+
+- 提交前失败：恢复旧状态；
+- 提交后清理失败：记录 warning，不破坏已提交成功状态。
 
 禁止启动时无提示地执行不可逆迁移。
 
-### 5.6 并发与锁
+### 5.7 并发与锁
 
 至少说明：
 
@@ -247,13 +281,14 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 
 - 恶意 `.codex-theme`；
 - 路径穿越；
-- 符号链接/重解析点；
+- 符号链接、junction 和 reparse point；
 - ZIP bomb；
 - 恶意图片；
 - 命令注入；
 - 不可信 Marketplace；
 - CDP 被同用户恶意进程访问；
 - 预览会话残留；
+- Runtime 更新供应链；
 - 日志泄露用户路径或项目名。
 
 ### 6.2 权限和信任边界
@@ -263,6 +298,7 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - UI；
 - App Core；
 - Platform Adapter；
+- Managed Runtime；
 - Runtime scripts；
 - Codex；
 - 外部 Provider；
@@ -288,11 +324,18 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - Repository；
 - Package；
 - path safety；
-- error mapping。
+- error mapping；
+- Runtime Distribution transaction。
 
 ### 7.2 Contract Test
 
-同一套 Adapter contract test 必须能验证 macOS 与 Windows 返回相同语义。
+同一套 Adapter contract test 必须能验证 macOS 与 Windows 返回相同语义，包括：
+
+- stdout/stderr/exit code；
+- apply/preview/revert/restore；
+- restart required；
+- recoverable error；
+- managed runtime version。
 
 ### 7.3 集成测试
 
@@ -308,7 +351,9 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - 重启；
 - 恢复；
 - 并发冲突；
-- 损坏主题。
+- 损坏主题；
+- Runtime 更新失败回滚；
+- 源码 checkout 被移动或删除后仍可运行。
 
 ### 7.4 Visual Regression
 
@@ -322,7 +367,8 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - Composer；
 - Code Block；
 - Attachment；
-- User Message。
+- User Message；
+- 原生 Header 和侧面板切换控件。
 
 ### 7.5 实机验收
 
@@ -340,7 +386,7 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 
 阶段完成必须满足：
 
-- 代码与文档合并；
+- 代码与文档完成；
 - CI 通过；
 - 实机验收通过；
 - Changelog 更新；
@@ -348,6 +394,7 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - 已知问题记录；
 - 无未说明的破坏性迁移；
 - 用户文档更新；
+- 上游采用日志更新；
 - 下一阶段依赖明确。
 
 ## 8. 发布与回滚模板
@@ -374,16 +421,13 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - 日期：
 - 决策者：
 - 关联 Phase：
+- 关联上游 Review/Action：
 
 ## 背景
 
 ## 约束
 
 ## 备选方案
-
-### 方案 A
-
-### 方案 B
 
 ## 决策
 
@@ -403,6 +447,7 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - Theme Schema v2 结构；
 - Preview 架构；
 - Runtime API；
+- Runtime Distribution；
 - Marketplace 签名；
 - 外部 AI Provider 模型。
 
@@ -418,7 +463,9 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 - 安全评审完成；
 - 测试计划可执行；
 - 依赖阶段已完成；
-- 基线分支已同步；
+- 当前 `main` 已完成 Review，比较节点已记录；
+- 相关上游能力已有采用或不采用决策；
+- 不要求 merge/rebase `main`，但不得跳过上游审查；
 - 未解决问题有明确 Owner。
 
 ## 11. 变更控制
@@ -429,4 +476,5 @@ Detect → Backup → Migrate → Validate → Commit → Cleanup
 2. 说明新增范围和被延期范围；
 3. 若改变总体架构，更新 Blueprint 或新增 ADR；
 4. 若影响用户数据，重新评审迁移和回滚；
-5. 不允许仅在代码或聊天记录里保留关键决策。
+5. 若来源于新上游变化，更新 Review 和 Adoption Log；
+6. 不允许仅在代码或聊天记录里保留关键决策。
