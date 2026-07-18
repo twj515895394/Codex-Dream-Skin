@@ -15,8 +15,16 @@ docs/studio/
 ├── dream-skin-studio-blueprint.md
 ├── multi-stage-roadmap.md
 ├── phase-design-and-delivery-template.md
-└── phases/
-    └── README.md
+├── phases/
+│   └── README.md
+└── upstream/
+    ├── README.md
+    ├── upstream-baseline.md
+    ├── upstream-adoption-log.md
+    ├── review-template.md
+    └── reviews/
+        ├── README.md
+        └── 2026-07-18-main-review.md
 ```
 
 ### 核心文档
@@ -28,6 +36,9 @@ docs/studio/
 | [`multi-stage-roadmap.md`](./multi-stage-roadmap.md) | 从当前版本到 Studio 的阶段拆分、依赖、验收门槛和延期项 | 每个阶段结束时校准 |
 | [`phase-design-and-delivery-template.md`](./phase-design-and-delivery-template.md) | 每个阶段开发前必须完成的细化设计模板与 Definition of Ready/Done | 开发治理规范 |
 | [`phases/README.md`](./phases/README.md) | 各阶段文档入口、状态和计划产物 | 持续更新 |
+| [`upstream/README.md`](./upstream/README.md) | 定期审查 `main`、连续记录比较节点并选择性迁移优秀设计 | 持续执行 |
+| [`upstream/upstream-baseline.md`](./upstream/upstream-baseline.md) | 下一次上游对比的唯一 commit 游标 | 每次 Review 最后更新 |
+| [`upstream/upstream-adoption-log.md`](./upstream/upstream-adoption-log.md) | 记录上游能力的采用方式、目标 Phase、实现提交和验证状态 | 持续更新 |
 
 ### 已有基础文档
 
@@ -53,7 +64,8 @@ Studio 设计直接继承当前分支已经落地的主题包与导入能力：
 - UI 信息架构和交互稿；
 - 技术设计与接口契约；
 - 数据迁移与兼容方案；
-- 安全、测试、发布和回滚方案。
+- 安全、测试、发布和回滚方案；
+- 最近一次 `main` 上游 Review 对本阶段的影响和采用决策。
 
 ### L2：实现记录
 
@@ -63,7 +75,8 @@ Studio 设计直接继承当前分支已经落地的主题包与导入能力：
 - 变更日志；
 - 测试记录；
 - 实机截图与验收报告；
-- 已知问题和后续债务。
+- 已知问题和后续债务；
+- 上游能力采用日志。
 
 ## 3. 维护原则
 
@@ -73,14 +86,36 @@ Studio 设计直接继承当前分支已经落地的主题包与导入能力：
 4. **保持跨平台域模型，允许平台适配器不同。** macOS 与 Windows 的进程、安装和安全实现可以不同，但主题库、包格式、编译 token 和 Studio 操作语义应统一。
 5. **所有破坏性操作都必须可恢复。** 删除、覆盖、预览、应用、迁移和升级均需备份或事务边界。
 6. **文档必须描述真实状态。** 未实现的能力标为“规划”或“待验证”，不得写成已经可用。
+7. **持续审查 `main`，但不自动合并。** 每次从 `upstream-baseline.md` 记录的 commit 续接，对新增变化做分析、分类和选择性迁移。
+8. **上游迁移必须独立。** Review 文档、迁移代码和验收记录分开提交，不能以“同步主分支”为理由批量带入未知变化。
 
-## 4. 当前分支说明
+## 4. 当前分支与上游策略
 
-截至基线日期，`feat/codex-theme-import-mvp` 相对 `main`：
+`feat/codex-theme-import-mvp` 已包含 macOS `.codex-theme` 导入器、主题包规范和 Studio 总体设计。
 
-- ahead 6 commits；
-- behind 12 commits；
-- 已包含 macOS `.codex-theme` 导入器及配套文档；
-- 尚未吸收 `main` 上后续 CI、Windows 安全加固和少量渲染修复。
+当前策略不是要求 Studio 分支持续 merge/rebase `main`，而是：
 
-因此 **Studio 实现阶段开始前必须先同步 `main`、解决冲突并重新执行双平台测试**。本目录的架构设计基于当前分支功能语义，但不会把分支暂时落后的代码状态固化为长期架构。
+```text
+记录上一次 main SHA
+    ↓
+定期比较新增 commit
+    ↓
+分析安全、Runtime、主题、CI 和架构价值
+    ↓
+选择 direct-adopt / adapt-adopt / concept-rewrite / defer / reject
+    ↓
+在独立提交中迁移并验证
+```
+
+首次上游 Review 已完成，审查终点是：
+
+```text
+19fa0342846219fb0476bfd648aa7f0f0019bb0b
+```
+
+下一次必须从该节点继续。详见：
+
+- [`upstream/upstream-baseline.md`](./upstream/upstream-baseline.md)
+- [`upstream/reviews/2026-07-18-main-review.md`](./upstream/reviews/2026-07-18-main-review.md)
+
+阶段进入开发前的门禁是“上游变化已经审查并形成采用决策”，不是“已经把 `main` 合并进当前分支”。
