@@ -32,3 +32,18 @@ Prefer `type(scope): summary`, for example `fix(windows): preserve UTF-8 config 
 ## Security & Release Notes
 
 CDP must remain loopback-only. Never modify official `.app`, WindowsApps, `app.asar`, signatures, API keys, or Base URLs. Update `macos/CHANGELOG.md` for user-visible macOS changes and bump `macos/VERSION` for release-worthy work. Maintain a clearly labeled Windows changelog as parity features and fixes ship.
+
+## 代理技能
+
+### 问题追踪器
+
+本地 Markdown 问题追踪器：位于 `.scratch/<feature-slug>/` 目录下。参见 `docs/agents/issue-tracker.md`。
+
+### 分类标签
+
+使用 5 个规范分类标签字符串。参见 `docs/agents/triage-labels.md`。
+
+### 领域文档
+
+单一上下文布局：根目录及 `docs/` 架构决策。参见 `docs/agents/domain.md`。
+
