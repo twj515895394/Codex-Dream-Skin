@@ -100,6 +100,7 @@ if (!validId(theme.id) || theme.id !== manifest.id) throw new Error('theme.id mu
 const image = rootFile(theme.image, 'theme.image');
 const preview = manifest.preview == null || manifest.preview === '' ? '' : rootFile(manifest.preview, 'manifest.preview');
 if (typeof manifest.name !== 'string' || !manifest.name.trim()) throw new Error('Manifest name is required');
+if (/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/u.test(manifest.name)) throw new Error('Manifest name contains invalid control characters');
 process.stdout.write(`${manifest.id}\n${image}\n${manifest.name.trim()}\n${preview}`);
 NODE
 )" || fail "Theme package metadata is invalid."
