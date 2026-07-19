@@ -7,6 +7,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { inspectLock } from "../operation-lock.js";
+import { inspectJournal } from "../transaction-journal.js";
 
 export function handleStatus(input = {}, opts = {}) {
   const includeChecks = Boolean(input.includeChecks);
@@ -29,39 +31,36 @@ export function handleStatus(input = {}, opts = {}) {
   let currentTheme = null;
 
   // 1. Check Operation Lock (owner.json)
-  const lockPath = opts.lockPath || path.join(stateRoot, "lock", "owner.json");
-  if (fs.existsSync(lockPath)) {
-    try {
-      const lockContent = fs.readFileSync(lockPath, "utf8");
-      const lockData = JSON.parse(lockContent);
-      if (lockData && lockData.operationId) {
-        busyOperation = {
-          busy: true,
-          operationId: lockData.operationId,
-          operation: lockData.operation || "unknown",
-        };
-      }
-    } catch {
-      // Ignore read errors
+  let lockDir = opts.lockDir || path.join(stateRoot, "locks", "operation.lock");
+  let lockInspection = inspectLock({ lockDir });
+  if (!lockInspection.exists) {
+    // Fallback check legacy path lock/owner.json if opts.lockPath or legacy exists
+    const legacyOwnerPath = opts.lockPath || path.join(stateRoot, "lock", "owner.json");
+    if (fs.existsSync(legacyOwnerPath)) {
+      lockInspection = inspectLock({ lockDir: path.dirname(legacyOwnerPath) });
     }
   }
 
-  // 2. Check Transaction Journal (journal.json)
-  const journalPath = opts.journalPath || path.join(stateRoot, "journal", "journal.json");
-  if (fs.existsSync(journalPath)) {
-    try {
-      const journalContent = fs.readFileSync(journalPath, "utf8");
-      const journalData = JSON.parse(journalContent);
-      if (journalData && (journalData.committed === false || journalData.state === "published" || journalData.error)) {
-        recoveryRequired = true;
-        recoveryData = {
-          transactionId: journalData.operationId || "unknown",
-          state: journalData.state || "unknown",
-        };
-      }
-    } catch {
-      // Ignore read errors
+  if (lockInspection.exists && !lockInspection.isStale && lockInspection.owner) {
+    const lockData = lockInspection.owner;
+    if (lockData.operationId) {
+      busyOperation = {
+        busy: true,
+        operationId: lockData.operationId,
+        operation: lockData.operation || "unknown",
+      };
     }
+  }
+
+  // 2. Check Transaction Journal (journals/current.json)
+  const journalInspection = inspectJournal({ stateRoot, journalPath: opts.journalPath });
+  if (journalInspection.exists && journalInspection.recoveryRequired) {
+    recoveryRequired = true;
+    const jData = journalInspection.journal || {};
+    recoveryData = {
+      transactionId: jData.operationId || "unknown",
+      state: jData.state || "unknown",
+    };
   }
 
   // 3. Check Active Theme (theme.json)

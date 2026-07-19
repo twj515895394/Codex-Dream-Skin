@@ -5,6 +5,7 @@
 import { handleCapabilities } from "./capabilities-handler.js";
 import { handleStatus } from "./status-handler.js";
 import { handleListThemes } from "./list-themes-handler.js";
+import { handleImportTheme } from "./import-theme-handler.js";
 import { createErrorObject } from "../codes.js";
 
 export function createRealAdapter(options = {}) {
@@ -17,6 +18,8 @@ export function createRealAdapter(options = {}) {
           return handleStatus(input, options);
         case "listThemes":
           return handleListThemes(input, options);
+        case "importTheme":
+          return handleImportTheme(input, options);
         default:
           const errObj = createErrorObject(
             "OPERATION_UNSUPPORTED",
@@ -28,5 +31,5 @@ export function createRealAdapter(options = {}) {
   };
 }
 
-export { handleCapabilities, handleStatus, handleListThemes };
+export { handleCapabilities, handleStatus, handleListThemes, handleImportTheme };
 
