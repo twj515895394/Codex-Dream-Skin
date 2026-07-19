@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: closed
 
 # 09 · importTheme Operation 端到端实现
 
@@ -34,14 +34,14 @@ Status: ready-for-agent
 
 ## 验收标准
 
-- [ ] importTheme 通过 #01/#02 的全部 fixture 测试
-- [ ] 正常包导入后通过 listThemes 可枚举，状态为 `ready`
-- [ ] 恶意包在正确的阶段被拒绝，返回对应 error code
-- [ ] 同 ID reject 策略返回 `THEME_ID_CONFLICT`
-- [ ] 同 ID replace 策略成功替换并保留备份
-- [ ] replace 失败自动恢复原主题
-- [ ] 事务全程有 journal 记录
-- [ ] Contract Test 覆盖所有成功和失败路径
+- [x] importTheme 通过 #01/#02 的全部 fixture 测试
+- [x] 正常包导入后通过 listThemes 可枚举，状态为 `ready`
+- [x] 恶意包在正确的阶段被拒绝，返回对应 error code
+- [x] 同 ID reject 策略返回 `THEME_ID_CONFLICT`
+- [x] 同 ID replace 策略成功替换并保留备份
+- [x] replace 失败自动恢复原主题
+- [x] 事务全程有 journal 记录
+- [x] Contract Test 覆盖所有成功和失败路径
 
 ## 被阻塞于
 
@@ -51,9 +51,11 @@ Status: ready-for-agent
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- 2026-07-19: importTheme Operation 实体 Handler 落关，位于 `core/runtime-api/handlers/import-theme-handler.js`。完整包含安全预检（路径穿越、可执行扩展名、Symlink拦截）、Manifest/Theme 不变量校验、Operation Lock / Transaction Journal 联动、同 ID 冲突处理（`reject` 阻断与 `replace` 备份覆盖）以及暂存目录的清理。测试套件 `macos/tests/import-theme-operation.test.mjs` 5 场景断言 100% PASS。详见 Walkthrough。

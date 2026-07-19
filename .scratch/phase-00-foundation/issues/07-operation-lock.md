@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: closed
 
 # 07 · 跨入口 Operation Lock 实现
 
@@ -38,12 +38,12 @@ STATE_ROOT/locks/operation.lock/
 
 ## 验收标准
 
-- [ ] 原子锁获取和释放在 macOS（目录锁）和 Windows（Mutex + 目录锁）上均可工作
-- [ ] 并发获取测试：两个进程同时尝试获取锁，仅一个成功
-- [ ] Stale lock 检测：模拟进程崩溃后，新进程能正确识别并回收 stale lock
-- [ ] PID reuse 防护：通过 processStartedAt 验证
-- [ ] owner.json 不泄露敏感路径或用户名
-- [ ] Contract Test 覆盖：获取、释放、busy、stale 回收、异常退出清理
+- [x] 原子锁获取和释放在 macOS（目录锁）和 Windows（Mutex + 目录锁）上均可工作
+- [x] 并发获取测试：两个进程同时尝试获取锁，仅一个成功
+- [x] Stale lock 检测：模拟进程崩溃后，新进程能正确识别并回收 stale lock
+- [x] PID reuse 防护：通过 processStartedAt 验证
+- [x] owner.json 不泄露敏感路径或用户名
+- [x] Contract Test 覆盖：获取、释放、busy、stale 回收、异常退出清理
 
 ## 被阻塞于
 
@@ -51,9 +51,11 @@ STATE_ROOT/locks/operation.lock/
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- 2026-07-19: Operation Lock 机制实施完成。核心模块位于 `core/runtime-api/operation-lock.js`，包含原子目录锁、Stale Lock 识别（包含 PID 复用防线）、`owner.json` 脱敏哈希以及进程退出清理挂钩。测试套件 `macos/tests/operation-lock.test.mjs` 包含 5 核心场景断言并已全量通过 (100% PASS)。技术总结见 Artifact Walkthrough。
