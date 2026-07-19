@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codex Dream Skin Studio - Vertical Slice</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-brand">
+        <span class="app-icon" aria-hidden="true">🎨</span>
+        <h1>Codex Dream Skin Studio</h1>
+        <span class="version-badge">Phase 00 Spike</span>
+      </div>
+      <div class="header-actions">
+        <button id="refresh-status-btn" class="btn btn-secondary" title="刷新系统与 Runtime 诊断状态">
+          <span class="btn-icon">🔄</span> 刷新状态
+        </button>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <!-- Section 1: Dashboard Status -->
+      <section class="card-grid">
+        <div class="status-card" id="card-runtime">
+          <div class="card-header">
+            <h3><span class="status-indicator" id="indicator-runtime"></span> Runtime 引擎</h3>
+            <span class="badge" id="badge-runtime">初始化中</span>
+          </div>
+          <div class="card-body">
+            <p id="desc-runtime">读取系统与受管运行时通信状态...</p>
+          </div>
+        </div>
+
+        <div class="status-card" id="card-codex">
+          <div class="card-header">
+            <h3><span class="status-indicator" id="indicator-codex"></span> Codex.app 绑定</h3>
+            <span class="badge" id="badge-codex">初始化中</span>
+          </div>
+          <div class="card-body">
+            <p id="desc-codex">读取官方 Bundle 及签名校验状态...</p>
+          </div>
+        </div>
+
+        <div class="status-card" id="card-skin">
+          <div class="card-header">
+            <h3><span class="status-indicator" id="indicator-skin"></span> Dream Skin 皮肤</h3>
+            <span class="badge" id="badge-skin">初始化中</span>
+          </div>
+          <div class="card-body">
+            <p id="desc-skin">读取当前激活皮肤与注入状态...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recovery Banner (Conditional) -->
+      <div id="recovery-banner" class="alert-banner warning-banner hidden">
+        <div class="banner-content">
+          <span class="banner-icon">⚠️</span>
+          <div>
+            <strong>检测到未完成事务 (Incomplete Transaction)</strong>
+            <p>系统发现上一次操作挂起的残留状态，可执行安全恢复。</p>
+          </div>
+        </div>
+        <button id="recover-transaction-btn" class="btn btn-danger">执行恢复 (Restore)</button>
+      </div>
+
+      <!-- Section 2: Theme Management & Actions -->
+      <section class="section-container">
+        <div class="section-header">
+          <h2>主题与皮肤管理</h2>
+          <div class="action-group">
+            <button id="load-themes-btn" class="btn btn-primary">
+              <span class="btn-icon">📁</span> 扫盘枚举主题 (listThemes)
+            </button>
+          </div>
+        </div>
+
+        <div id="themes-grid" class="themes-grid">
+          <div class="empty-state">点击上方“扫盘枚举主题”加载本地受管皮肤包...</div>
+        </div>
+      </section>
+
+      <!-- Section 3: Operations & Verification Panel -->
+      <section class="section-container">
+        <div class="section-header">
+          <h2>结构化验证与状态复原</h2>
+        </div>
+        <div class="op-panel">
+          <button id="btn-verify" class="btn btn-secondary">
+            <span class="btn-icon">🔍</span> 深度诊断 (verify)
+          </button>
+          <button id="btn-restore" class="btn btn-warning">
+            <span class="btn-icon">🛡️</span> 安全复原 (restore)
+          </button>
+        </div>
+
+        <div id="result-console" class="result-console">
+          <pre id="console-output">// 结构化诊断输出控制台...</pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
