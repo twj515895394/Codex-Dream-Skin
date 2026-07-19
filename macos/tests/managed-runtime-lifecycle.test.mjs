@@ -217,4 +217,27 @@ test("Managed Runtime Lifecycle Test Suite", async (t) => {
       }
     }
   });
+
+  await t.test("7. EXDEV 跨文件系统挂载平滑 fallback 安装容错", async () => {
+    const ctx = createIsolatedStateRoot();
+    try {
+      createRuntimePayloadFixture(ctx.payloadDir, "0.1.0", "content-exdev");
+
+      // Install with simulated EXDEV error (cross-device move)
+      const resInst = await installManagedRuntime(ctx.payloadDir, {
+        stateRoot: ctx.stateRoot,
+        simulateExdevError: true,
+      });
+
+      assert.equal(resInst.ok, true);
+      assert.equal(resInst.data.installed, true);
+      assert.equal(resInst.data.currentVersion, "0.1.0");
+
+      const verifyRes = await verifyManagedRuntime({ stateRoot: ctx.stateRoot });
+      assert.equal(verifyRes.ok, true);
+      assert.equal(verifyRes.data.version, "0.1.0");
+    } finally {
+      cleanupIsolatedStateRoot(ctx);
+    }
+  });
 });

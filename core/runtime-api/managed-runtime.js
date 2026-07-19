@@ -13,6 +13,27 @@ import crypto from "node:crypto";
 
 import { createErrorObject } from "./codes.js";
 
+export function atomicMoveOrCopySync(srcPath, destPath, opts = {}) {
+  try {
+    if (opts.simulateExdevError) {
+      const err = new Error("EXDEV: cross-device link not permitted");
+      err.code = "EXDEV";
+      throw err;
+    }
+    fs.renameSync(srcPath, destPath);
+  } catch (err) {
+    if (err.code === "EXDEV") {
+      if (fs.existsSync(destPath)) {
+        fs.rmSync(destPath, { recursive: true, force: true });
+      }
+      fs.cpSync(srcPath, destPath, { recursive: true });
+      fs.rmSync(srcPath, { recursive: true, force: true });
+    } else {
+      throw err;
+    }
+  }
+}
+
 function resolveStateRoot(opts = {}) {
   if (opts.stateRoot) return opts.stateRoot;
   if (process.env.STATE_ROOT) return process.env.STATE_ROOT;
@@ -203,11 +224,11 @@ export async function installManagedRuntime(payloadDir, opts = {}) {
   let previousVersion = currentMeta.currentVersion;
   if (fs.existsSync(paths.currentDir)) {
     fs.rmSync(paths.previousDir, { recursive: true, force: true });
-    fs.renameSync(paths.currentDir, paths.previousDir);
+    atomicMoveOrCopySync(paths.currentDir, paths.previousDir, opts);
   }
 
   // 4. Atomic Publish (Staging -> Current)
-  fs.renameSync(paths.stagingDir, paths.currentDir);
+  atomicMoveOrCopySync(paths.stagingDir, paths.currentDir, opts);
 
   // 5. Save metadata
   saveRuntimeMetadata(stateRoot, newVersion, previousVersion);

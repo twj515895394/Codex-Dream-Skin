@@ -1,5 +1,5 @@
 /**
- * macOS Platform Adapter Implementation for Runtime API v1
+ * macOS Platform Adapter Implementation for Runtime API v1 (DS-FIX-004 Hardened)
  *
  * Ground Truth:
  * - docs/studio/phases/phase-00-foundation-and-shell-spike/contracts-and-data-model.md
@@ -40,6 +40,15 @@ function resolveBundledNodePath(opts = {}) {
   return path.join(appPath, "Contents/Resources/cua_node/bin/node");
 }
 
+function createDiagnosticMetadata(errorObj = null) {
+  return {
+    platform: "darwin",
+    adapterVersion: "0.1.0-macos",
+    recoverable: errorObj ? Boolean(errorObj.recoverable || errorObj.details?.recoverable) : true,
+    timestamp: new Date().toISOString(),
+  };
+}
+
 /**
  * Probe official macOS Codex codesign signature without shell evaluation
  */
@@ -52,6 +61,7 @@ function probeMacosCodesign(codexAppPath) {
     const output = execFileSync("/usr/bin/codesign", ["-dv", "--verbose=4", codexAppPath], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      shell: false,
     });
 
     const combinedOutput = output || "";
@@ -93,7 +103,12 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
      */
     async probeCapabilities(input = {}) {
       const baseRes = await handleCapabilities(input, options);
-      if (!baseRes.ok) return baseRes;
+      if (!baseRes.ok) {
+        return {
+          ...baseRes,
+          diagnosticMetadata: createDiagnosticMetadata(baseRes.error),
+        };
+      }
 
       let signatureInfo = { valid: true, teamId: "28B49R5894" };
       if (!options.skipCodesign && process.platform === "darwin") {
@@ -116,6 +131,7 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
             teamId: signatureInfo.teamId,
           },
         },
+        diagnosticMetadata: createDiagnosticMetadata(),
       };
     },
 
@@ -123,14 +139,16 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
      * Typed Method: readStatus
      */
     async readStatus(input = {}) {
-      return handleStatus(input, { ...options, stateRoot });
+      const res = await handleStatus(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: listThemes
      */
     async listThemes(input = {}) {
-      return handleListThemes(input, { ...options, stateRoot });
+      const res = await handleListThemes(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
@@ -138,38 +156,31 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
      */
     async validatePackage(sourceFile) {
       if (!sourceFile || typeof sourceFile !== "string" || !path.isAbsolute(sourceFile)) {
-        return {
-          ok: false,
-          error: createErrorObject("INVALID_REQUEST", "sourceFile must be an absolute path"),
-        };
+        const err = createErrorObject("INVALID_REQUEST", "sourceFile must be an absolute path");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       if (!fs.existsSync(sourceFile)) {
-        return {
-          ok: false,
-          error: createErrorObject("PACKAGE_NOT_FOUND", `Package file not found: ${sourceFile}`),
-        };
+        const err = createErrorObject("PACKAGE_NOT_FOUND", `Package file not found: ${sourceFile}`);
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       if (!sourceFile.endsWith(".codex-theme")) {
-        return {
-          ok: false,
-          error: createErrorObject("PACKAGE_UNREADABLE", "Theme package must end with .codex-theme"),
-        };
+        const err = createErrorObject("PACKAGE_UNREADABLE", "Theme package must end with .codex-theme");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       const stat = fs.statSync(sourceFile);
       if (stat.size === 0 || stat.size > 67108864) {
-        return {
-          ok: false,
-          error: createErrorObject(stat.size === 0 ? "PACKAGE_UNREADABLE" : "PACKAGE_TOO_LARGE", "Invalid package size"),
-        };
+        const err = createErrorObject(stat.size === 0 ? "PACKAGE_UNREADABLE" : "PACKAGE_TOO_LARGE", "Invalid package size");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
-      return { ok: true, data: { valid: true, sourceFile, bytes: stat.size } };
+      return { ok: true, data: { valid: true, sourceFile, bytes: stat.size }, diagnosticMetadata: createDiagnosticMetadata() };
     },
 
     /**
      * Typed Method: importTheme
      */
     async importTheme(input = {}) {
-      return handleImportTheme(input, { ...options, stateRoot });
+      const res = await handleImportTheme(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
@@ -177,44 +188,43 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
      */
     async loadThemeById(themeId) {
       if (!themeId || typeof themeId !== "string") {
-        return {
-          ok: false,
-          error: createErrorObject("INVALID_REQUEST", "themeId must be a non-empty string"),
-        };
+        const err = createErrorObject("INVALID_REQUEST", "themeId must be a non-empty string");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       const themesRes = await handleListThemes({}, { ...options, stateRoot });
-      if (!themesRes.ok) return themesRes;
+      if (!themesRes.ok) return { ...themesRes, diagnosticMetadata: createDiagnosticMetadata(themesRes.error) };
 
       const found = (themesRes.data.themes || []).find((t) => t.id === themeId);
       if (!found) {
-        return {
-          ok: false,
-          error: createErrorObject("THEME_NOT_FOUND", `Theme '${themeId}' not found`),
-        };
+        const err = createErrorObject("THEME_NOT_FOUND", `Theme '${themeId}' not found`);
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
 
-      return { ok: true, data: { theme: found } };
+      return { ok: true, data: { theme: found }, diagnosticMetadata: createDiagnosticMetadata() };
     },
 
     /**
      * Typed Method: applyTheme
      */
     async applyTheme(input = {}) {
-      return handleApplyTheme(input, { ...options, stateRoot });
+      const res = await handleApplyTheme(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: verify
      */
     async verify(input = {}) {
-      return handleVerify(input, { ...options, stateRoot });
+      const res = await handleVerify(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: restore
      */
     async restore(input = {}) {
-      return handleRestore(input, { ...options, stateRoot });
+      const res = await handleRestore(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
@@ -229,6 +239,7 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
           platform: "darwin",
           stateRoot,
         },
+        diagnosticMetadata: createDiagnosticMetadata(),
       };
     },
 
@@ -236,7 +247,6 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
      * Standard Host Operation Router
      */
     async handleOperation(operation, input = {}, reqCtx = {}) {
-      // Check fault injection options (for contract & runner testing)
       if (injectionOpts.throwInternalError) {
         throw new Error(injectionOpts.throwMessage || "Simulated unhandled adapter exception.");
       }
@@ -246,10 +256,10 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
           injectionOpts.failMessage || `Simulated error for ${operation}`,
           { recoverable: Boolean(injectionOpts.recoverable) }
         );
-        return { ok: false, error: errObj };
+        return { ok: false, error: errObj, diagnosticMetadata: createDiagnosticMetadata(errObj) };
       }
       if (injectionOpts.returnMalformedData) {
-        return { ok: true, data: "this is string not object" };
+        return { ok: true, data: "this is string not object", diagnosticMetadata: createDiagnosticMetadata() };
       }
 
       switch (operation) {
@@ -272,7 +282,7 @@ export function createMacosAdapter(options = {}, injectionOpts = {}) {
             "OPERATION_UNSUPPORTED",
             `Operation '${operation}' is not supported by macos adapter.`
           );
-          return { ok: false, error: errObj };
+          return { ok: false, error: errObj, diagnosticMetadata: createDiagnosticMetadata(errObj) };
       }
     },
   };

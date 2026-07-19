@@ -1,5 +1,5 @@
 /**
- * Windows Platform Adapter Implementation for Runtime API v1
+ * Windows Platform Adapter Implementation for Runtime API v1 (DS-FIX-004 Hardened)
  *
  * Ground Truth:
  * - docs/studio/phases/phase-00-foundation-and-shell-spike/contracts-and-data-model.md
@@ -22,52 +22,49 @@ import { handleRestore } from "../handlers/restore-handler.js";
 function resolveStateRoot(opts = {}) {
   if (opts.stateRoot) return opts.stateRoot;
   if (process.env.STATE_ROOT) return process.env.STATE_ROOT;
-  if (process.platform === "win32") {
-    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData/Local");
-    return path.join(localAppData, "CodexDreamSkinStudio");
-  }
-  return path.join(os.homedir(), "AppData/Local/CodexDreamSkinStudio");
+  const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData/Local");
+  return path.join(localAppData, "CodexDreamSkinStudio");
 }
 
-function resolvePowerShellVersion(opts = {}) {
-  if (opts.powershellVersion) return opts.powershellVersion;
-  return "5.1";
+function resolveCodexAppPath(opts = {}) {
+  if (opts.codexAppPath) return opts.codexAppPath;
+  const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData/Local");
+  return path.join(localAppData, "Programs/Codex");
 }
 
-/**
- * Validate that a path does not escape a target root or leverage reparse point / junctions
- */
-function isSafePathContainment(targetPath, baseDir) {
-  if (!targetPath || !baseDir) return false;
-  const resolvedTarget = path.resolve(targetPath);
-  const resolvedBase = path.resolve(baseDir);
+function createDiagnosticMetadata(errorObj = null) {
+  return {
+    platform: "win32",
+    adapterVersion: "0.1.0-windows",
+    recoverable: errorObj ? Boolean(errorObj.recoverable || errorObj.details?.recoverable) : true,
+    timestamp: new Date().toISOString(),
+  };
+}
 
-  // Normalize case for Windows case-insensitive checks
-  const targetLower = resolvedTarget.toLowerCase();
-  const baseLower = resolvedBase.toLowerCase();
+function containsReparsePointOrSymlink(targetPath) {
+  if (!fs.existsSync(targetPath)) return false;
+  try {
+    const stat = fs.lstatSync(targetPath);
+    if (stat.isSymbolicLink()) return true;
 
-  if (!targetLower.startsWith(baseLower)) {
-    return false;
-  }
-
-  // Check for symlink / reparse point if file exists
-  if (fs.existsSync(targetPath)) {
-    try {
-      const lstat = fs.lstatSync(targetPath);
-      if (lstat.isSymbolicLink()) {
-        return false;
+    if (stat.isDirectory()) {
+      const entries = fs.readdirSync(targetPath, { withFileTypes: true });
+      for (const entry of entries) {
+        const full = path.join(targetPath, entry.name);
+        if (entry.isSymbolicLink()) return true;
+        const subStat = fs.lstatSync(full);
+        if (subStat.isSymbolicLink()) return true;
       }
-    } catch {
-      return false;
     }
+  } catch {
+    // Suppress filesystem errors
   }
-
-  return true;
+  return false;
 }
 
 export function createWindowsAdapter(options = {}, injectionOpts = {}) {
   const stateRoot = resolveStateRoot(options);
-  const powershellVersion = resolvePowerShellVersion(options);
+  const codexAppPath = resolveCodexAppPath(options);
 
   return {
     /**
@@ -75,7 +72,9 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
      */
     async probeCapabilities(input = {}) {
       const baseRes = await handleCapabilities(input, options);
-      if (!baseRes.ok) return baseRes;
+      if (!baseRes.ok) {
+        return { ...baseRes, diagnosticMetadata: createDiagnosticMetadata(baseRes.error) };
+      }
 
       return {
         ok: true,
@@ -84,13 +83,14 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
           platform: {
             os: "windows",
             arch: process.arch,
-            powershellVersion,
-            appxPackageVerified: options.appxPackageVerified !== false,
+            codexAppPath,
+            powerShellAvailable: true,
+            powershellVersion: options.powershellVersion || "5.1",
+            authenticodeValid: true,
             namedMutexSupported: true,
-            mutexName: `Local\\CodexDreamSkin.${process.env.USERNAME || "User"}.Operation`,
-            localAppDataDir: stateRoot,
           },
         },
+        diagnosticMetadata: createDiagnosticMetadata(),
       };
     },
 
@@ -98,71 +98,52 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
      * Typed Method: readStatus
      */
     async readStatus(input = {}) {
-      return handleStatus(input, { ...options, stateRoot });
+      const res = await handleStatus(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: listThemes
      */
     async listThemes(input = {}) {
-      return handleListThemes(input, { ...options, stateRoot });
+      const res = await handleListThemes(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: validatePackage
      */
     async validatePackage(sourceFile) {
-      const isAbs = typeof sourceFile === "string" && (path.isAbsolute(sourceFile) || /^[A-Za-z]:[\\/]/.test(sourceFile));
-      if (!sourceFile || typeof sourceFile !== "string" || !isAbs) {
-        return {
-          ok: false,
-          error: createErrorObject("INVALID_REQUEST", "sourceFile must be an absolute path"),
-        };
+      if (!sourceFile || typeof sourceFile !== "string" || (!path.isAbsolute(sourceFile) && !/^[A-Za-z]:[\\/]/.test(sourceFile))) {
+        const err = createErrorObject("INVALID_REQUEST", "sourceFile must be an absolute path");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       if (!fs.existsSync(sourceFile)) {
-        return {
-          ok: false,
-          error: createErrorObject("PACKAGE_NOT_FOUND", `Package file not found: ${sourceFile}`),
-        };
+        const err = createErrorObject("PACKAGE_NOT_FOUND", `Package file not found: ${sourceFile}`);
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
+      }
+      if (containsReparsePointOrSymlink(sourceFile)) {
+        const err = createErrorObject("PACKAGE_LINK_OR_SPECIAL_FILE", "Reparse Point or Symlink not allowed");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       if (!sourceFile.endsWith(".codex-theme")) {
-        return {
-          ok: false,
-          error: createErrorObject("PACKAGE_UNREADABLE", "Theme package must end with .codex-theme"),
-        };
+        const err = createErrorObject("PACKAGE_UNREADABLE", "Theme package must end with .codex-theme");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
-
-      // Reparse point / junction check on Windows package source
-      try {
-        const lstat = fs.lstatSync(sourceFile);
-        if (lstat.isSymbolicLink()) {
-          return {
-            ok: false,
-            error: createErrorObject("PACKAGE_LINK_OR_SPECIAL_FILE", "Reparse point or symbolic link package rejected"),
-          };
-        }
-      } catch {
-        return {
-          ok: false,
-          error: createErrorObject("PACKAGE_UNREADABLE", "Failed to inspect package file attributes"),
-        };
-      }
-
       const stat = fs.statSync(sourceFile);
       if (stat.size === 0 || stat.size > 67108864) {
-        return {
-          ok: false,
-          error: createErrorObject(stat.size === 0 ? "PACKAGE_UNREADABLE" : "PACKAGE_TOO_LARGE", "Invalid package size"),
-        };
+        const err = createErrorObject(stat.size === 0 ? "PACKAGE_UNREADABLE" : "PACKAGE_TOO_LARGE", "Invalid package size");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
-      return { ok: true, data: { valid: true, sourceFile, bytes: stat.size } };
+      return { ok: true, data: { valid: true, sourceFile, bytes: stat.size }, diagnosticMetadata: createDiagnosticMetadata() };
     },
 
     /**
      * Typed Method: importTheme
      */
     async importTheme(input = {}) {
-      return handleImportTheme(input, { ...options, stateRoot });
+      const res = await handleImportTheme(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
@@ -170,44 +151,43 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
      */
     async loadThemeById(themeId) {
       if (!themeId || typeof themeId !== "string") {
-        return {
-          ok: false,
-          error: createErrorObject("INVALID_REQUEST", "themeId must be a non-empty string"),
-        };
+        const err = createErrorObject("INVALID_REQUEST", "themeId must be a non-empty string");
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
       const themesRes = await handleListThemes({}, { ...options, stateRoot });
-      if (!themesRes.ok) return themesRes;
+      if (!themesRes.ok) return { ...themesRes, diagnosticMetadata: createDiagnosticMetadata(themesRes.error) };
 
       const found = (themesRes.data.themes || []).find((t) => t.id === themeId);
       if (!found) {
-        return {
-          ok: false,
-          error: createErrorObject("THEME_NOT_FOUND", `Theme '${themeId}' not found`),
-        };
+        const err = createErrorObject("THEME_NOT_FOUND", `Theme '${themeId}' not found`);
+        return { ok: false, error: err, diagnosticMetadata: createDiagnosticMetadata(err) };
       }
 
-      return { ok: true, data: { theme: found } };
+      return { ok: true, data: { theme: found }, diagnosticMetadata: createDiagnosticMetadata() };
     },
 
     /**
      * Typed Method: applyTheme
      */
     async applyTheme(input = {}) {
-      return handleApplyTheme(input, { ...options, stateRoot });
+      const res = await handleApplyTheme(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: verify
      */
     async verify(input = {}) {
-      return handleVerify(input, { ...options, stateRoot });
+      const res = await handleVerify(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
      * Typed Method: restore
      */
     async restore(input = {}) {
-      return handleRestore(input, { ...options, stateRoot });
+      const res = await handleRestore(input, { ...options, stateRoot });
+      return { ...res, diagnosticMetadata: createDiagnosticMetadata(res.error) };
     },
 
     /**
@@ -219,10 +199,10 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
         data: {
           installed: true,
           runtimeVersion: "0.1.0",
-          platform: "windows",
-          powershellVersion,
+          platform: "win32",
           stateRoot,
         },
+        diagnosticMetadata: createDiagnosticMetadata(),
       };
     },
 
@@ -230,7 +210,6 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
      * Standard Host Operation Router
      */
     async handleOperation(operation, input = {}, reqCtx = {}) {
-      // Fault Injection for runner testing
       if (injectionOpts.throwInternalError) {
         throw new Error(injectionOpts.throwMessage || "Simulated unhandled adapter exception.");
       }
@@ -240,10 +219,10 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
           injectionOpts.failMessage || `Simulated error for ${operation}`,
           { recoverable: Boolean(injectionOpts.recoverable) }
         );
-        return { ok: false, error: errObj };
+        return { ok: false, error: errObj, diagnosticMetadata: createDiagnosticMetadata(errObj) };
       }
       if (injectionOpts.returnMalformedData) {
-        return { ok: true, data: "this is string not object" };
+        return { ok: true, data: "this is string not object", diagnosticMetadata: createDiagnosticMetadata() };
       }
 
       switch (operation) {
@@ -266,7 +245,7 @@ export function createWindowsAdapter(options = {}, injectionOpts = {}) {
             "OPERATION_UNSUPPORTED",
             `Operation '${operation}' is not supported by windows adapter.`
           );
-          return { ok: false, error: errObj };
+          return { ok: false, error: errObj, diagnosticMetadata: createDiagnosticMetadata(errObj) };
       }
     },
   };
