@@ -12,7 +12,14 @@
 | [0001](./0001-runtime-api-process-boundary.md) | Runtime API 使用单请求子进程与 stdin/stdout JSON 边界 | Accepted | `DS-FND-002/003/004` |
 | [0002](./0002-operation-lock-and-transaction-journal.md) | 跨入口 operation lock 与 transaction journal | Accepted | `DS-FND-005` |
 | [0003](./0003-versioned-managed-runtime.md) | 使用版本化受管 Runtime 与 current/previous 指针 | Accepted | `DS-FND-006` |
-| [0004](./0004-desktop-shell-selection.md) | Desktop Shell 选型必须经过双平台 Spike | Proposed | `DS-FND-007/008` |
+| [0004](./0004-desktop-shell-selection.md) | Desktop Shell 选型必须经过技术 Spike | Proposed | `DS-FND-007/008` |
+| [0005](./0005-macos-first-launcher-first-delivery.md) | 采用 macOS-first 与 Launcher-first 交付策略 | Accepted | `DS-FND-007/008`、Windows Adaptation Phase |
+
+## 当前平台解释
+
+- 当前实现、CI、验收和发布以 macOS 为唯一门禁；
+- Windows 保留接口与域模型兼容性，但延后到 macOS 全阶段完成后的独立适配阶段；
+- Desktop Shell Spike 必须同时验证独立 `Dream Skin.app` Launcher 与 `Dream Skin Studio.app` 管理界面的职责边界。
 
 ## 约束
 
