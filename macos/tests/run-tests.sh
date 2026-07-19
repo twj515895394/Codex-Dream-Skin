@@ -48,6 +48,7 @@ fi
 "$NODE" "$ROOT/tests/renderer-inject.test.mjs"
 "$NODE" "$ROOT/tests/theme-stage.test.mjs"
 "$NODE" "$ROOT/../tests/fixtures/generators/package-fixture-generator.test.mjs"
+"$NODE" "$ROOT/tests/importer-regression.test.mjs"
 
 # Every bundled preset must be a valid, injectable theme pack with a preset-* id.
 for preset in "$ROOT"/presets/preset-*/; do

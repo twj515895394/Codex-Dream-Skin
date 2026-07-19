@@ -41,13 +41,13 @@ archive_entries="$(/usr/bin/unzip -Z1 "$PACKAGE" 2>/dev/null)" \
 while IFS= read -r entry; do
   [ -n "$entry" ] || continue
   case "$entry" in
-    /*|*'../'*|../*|*'/..'|..)
+    /*|*'../'*|../*|*'/..'|..|*'..\ '*|*'..\ '*|'..\'*|*'\..'*|*'\..')
       fail "Theme package contains an unsafe path: $entry"
       ;;
   esac
   lower="$(printf '%s' "$entry" | /usr/bin/tr '[:upper:]' '[:lower:]')"
   case "$lower" in
-    *.command|*.sh|*.bash|*.zsh|*.app|*.pkg|*.dmg|*.exe|*.dll|*.dylib|*.so|*.bin|*.js|*.mjs|*.cjs|*.py|*.pl|*.rb)
+    *.command|*.sh|*.bash|*.zsh|*.app|*.pkg|*.dmg|*.exe|*.dll|*.dylib|*.so|*.bin|*.js|*.mjs|*.cjs|*.py|*.pl|*.rb|*.ps1|*.bat|*.cmd)
       fail "Theme packages are data-only; executable content is not allowed: $entry"
       ;;
   esac
