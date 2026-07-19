@@ -8,13 +8,13 @@
 > 当前设计基线：`5d3243c21715080072b4007ac5da10e6d3a7f185`  
 > 最新 `main` Review SHA：`dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c`  
 > 当前 Review 标识：`UPR-20260719-001`  
-> 当前 Phase 状态：`Phase 00 Foundation Core Implementation Complete`
+> 当前 Phase 状态：`Phase 00 Complete & Ready for Phase 01 Detailed Design`
 
 ---
 
 ## 当前真实状态
 
-Phase 00 的详细设计已经完成并达到 `Ready`，且基础架构、Runtime API、Platform Adapters、Managed Runtime、Desktop Shell Spike 及 Vertical Slice 已全量落地并通过自动化回归。
+Phase 00 的详细设计、基础架构、Runtime API、Platform Adapters、Managed Runtime、Desktop Shell Spike、Vertical Slice、Code Review Fix Round (`DS-FIX-001` ~ `DS-FIX-006`, `DS-QA-005`) 及架构/测试 Code Review 对齐已全量完成，且全量 16 个自动化回归测试脚本 100% PASS。
 
 已完成：
 
@@ -33,6 +33,8 @@ Phase 00 的详细设计已经完成并达到 `Ready`，且基础架构、Runtim
 - `DS-FND-006 / Issue 13` Managed Runtime 生命周期管理、Manifest & SHA256 强校验、双版本原子升降级 (`managed-runtime.js` 及 7 测试场景 100% PASS)；
 - `DS-FND-007 / DS-FND-008 / Issue 14` Desktop Shell 选型 Spike、Scorecard 对照及 ADR-0004 Accepted (`spikes/desktop-shell-spike/`, `scorecard.md` 及 4 测试场景 100% PASS)；
 - `Issue 15` Vertical Slice 端到端集成与 Apple Design 高保真 UI (`vertical-slice/` 及 3 测试场景 100% PASS)；
+- `Phase 00 Code Review Fix Round` (`DS-FIX-001` ~ `DS-FIX-006`, `DS-QA-005`) 7 项修补、心跳日志钩子与 `EXDEV` 跨文件系统 Fallback 优化落关 (`security-hardening.test.mjs`, `launcher-architecture.test.mjs`, `failure-injection-matrix.test.mjs`，全量 16 套件 100% PASS)；
+- Phase 00 全量代码与主方向架构设计体系深度 Check & Review 对齐完成；
 - Runtime JSON API v1 设计；
 - macOS/Windows Adapter 边界；
 - stdout、stderr、退出码和稳定错误码；
@@ -47,14 +49,15 @@ Phase 00 的详细设计已经完成并达到 `Ready`，且基础架构、Runtim
 
 尚未实现：
 
-- 阶段全量交付后的代码与主方向设计体系深度 Check & Review 对齐；
+- Phase 01 生产层级主题管理器的详细开发设计与功能拆解；
 - 双平台原生打包发布与完整实机矩阵 Final Sign-Off (`DS-QA-003/004`)。
 
-因此不得把 `Phase 00 Ready` 描述为 Phase 00 功能已经完成、测试通过或实机交付。
+因此不得把未规划或未开始的 Phase 01 描述为已完成。
 
 ## Handoff 指针
 
-- 最新历史快照：[`handoff-20260719-phase00-completed.md`](./handoff-20260719-phase00-completed.md)；
+- 最新历史快照：[`handoff-20260719-phase00-fix-round-completed.md`](./handoff-20260719-phase00-fix-round-completed.md)；
+- 阶段历史快照：[`handoff-20260719-phase00-completed.md`](./handoff-20260719-phase00-completed.md)；
 - 阶段历史快照：[`handoff-20260719-phase00-issues-07-09-done.md`](./handoff-20260719-phase00-issues-07-09-done.md)；
 - 阶段设计历史快照：[`handoff-20260719-phase00-design-ready.md`](./handoff-20260719-phase00-design-ready.md)；
 - 当前 Phase 入口：[`phases/phase00/current.md`](./phases/phase00/current.md)；
@@ -65,23 +68,23 @@ Phase 00 的详细设计已经完成并达到 `Ready`，且基础架构、Runtim
 ## 当前任务
 
 ```text
-Phase 00 Code & Architecture Design Check
-对 Phase 00 的全量代码及架构设计与主方向设计规范（PRD/Architecture）进行整体 Code Check / Review 对齐。
+Phase 01 Production Theme Manager Detailed Design & Planning
+开启 Phase 01 生产层级主题管理器的详细开发设计（包含扩展应用状态、复杂主题格式规格、平台管理模块与 UI 组件规划）。
 ```
 
 问题文件：[`.scratch/phase-00-foundation/PRD.md`](../.scratch/phase-00-foundation/PRD.md)
 
 交付：
 
-- 对齐全量已实现的 13 个 Issue 代码逻辑；
-- 复查静态安全防线（绝对无 shell 拼接、绝对无 Symlink 漏洞）；
-- 对齐 App Core / Runtime / Adapter 边界契约与主方向设计。
+- 梳理 Phase 01 的功能范围、数据模型与架构设计；
+- 输出 Phase 01 详细设计文档（PRD / Technical Design / Tasks Plan）；
+- 经用户评审确认后开启 Phase 01 编码。
 
 ## 可并行与后续任务
 
 ```text
-Phase 01 Production Theme Manager Architecture & Planning
-准备开启 Phase 01 生产层级主题管理器的详细规划与设计。
+Phase 01 Component & Core Implementation
+在完成 Phase 01 详细开发设计后，按任务拆解依次推进 Phase 01 的功能编码与测试。
 ```
 
 问题文件：[`../docs/studio/phases/phase-00-foundation-and-shell-spike/README.md`](../docs/studio/phases/phase-00-foundation-and-shell-spike/README.md)
@@ -124,6 +127,7 @@ windowsAdapter: complete
 managedRuntime: complete
 desktopShellSpike: complete
 verticalSlice: complete
+codeReviewFixRound: complete
 macosRealDeviceMatrix: in-progress
 windowsRealDeviceMatrix: in-progress
 rollbackEvidence: complete
@@ -162,7 +166,7 @@ rollbackEvidence: complete
 ## 禁止提前进行
 
 - 不自动 merge/rebase `main`；
-- 不直接开始正式 Theme Manager 大规模 UI；
+- 不直接开始正式 Theme Manager 大规模 UI 编码（先完成 Phase 01 详细开发设计）；
 - 不凭偏好选择 Tauri 2 或 Electron；
 - 不让 UI 拼接或执行任意 Shell/PowerShell；
 - 不让 UI 直接连接 CDP；
@@ -175,7 +179,7 @@ rollbackEvidence: complete
 ## 下一步
 
 ```text
-在下个会话对 Phase 00 的全量代码及架构设计与主方向设计规范（PRD/Architecture）进行整体 Code Check / Review 对齐。
+在下一个会话中开启 Phase 01 生产层级主题管理器的详细开发设计（Phase 01 Detailed Design）。
 ```
 
 ## 新会话启动 Prompt
@@ -185,7 +189,8 @@ rollbackEvidence: complete
 
 先确认当前分支真实 HEAD、PR #2 状态、main 当前 SHA 和 upstream cursor。不要自动 merge/rebase main；若 main 超过 dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c，先续接 Review。
 
-Phase 00 的全部 13 个工作项 (Issue 03 ~ Issue 15) 已全量实施完成，测试 100% PASS。在下一个会话中，我们需要先对 Phase 00 的全量代码及架构设计与主方向设计规范（PRD/Architecture）进行整体 Code Check / Review 对齐。
+Phase 00 的 Foundation & Shell Spike 全部 15 个基础 Issue 以及 Code Review Fix Round (DS-FIX-001 ~ DS-FIX-006, DS-QA-005) 均已全量完成，全量 16 个测试套件 100% PASS，架构 Code Review 已成功对齐。
+在下一个会话中，我们需要开启 Phase 01 生产层级主题管理器的详细开发设计（Phase 01 Detailed Design）。
 ```
 
 ## 当前交接 Checklist
