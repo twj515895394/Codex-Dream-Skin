@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # 10 · applyTheme + verify + restore Operation 端到端实现
 
@@ -44,14 +44,14 @@ Status: ready-for-agent
 
 ## 验收标准
 
-- [ ] applyTheme 成功路径：theme applied + verified，journal 完成
-- [ ] applyTheme inject 失败：自动 rollback 到旧主题，journal 记录恢复
-- [ ] applyTheme rollback 失败：status 显示 `recoveryRequired`
-- [ ] applyTheme 需要 restart：返回 action `confirmRestart` 而非自动 kill
-- [ ] verify 返回结构化检查结果，不仅仅是 pass/fail
-- [ ] restore 成功清理 Dream Skin 状态，Codex 恢复正常
-- [ ] restore 处理损坏 journal 不崩溃
-- [ ] Contract Test 覆盖所有成功和失败路径
+- [x] applyTheme 成功路径：theme applied + verified，journal 完成
+- [x] applyTheme inject 失败：自动 rollback 到旧主题，journal 记录恢复
+- [x] applyTheme rollback 失败：status 显示 `recoveryRequired`
+- [x] applyTheme 需要 restart：返回 action `confirmRestart` 而非自动 kill
+- [x] verify 返回结构化检查结果，不仅仅是 pass/fail
+- [x] restore 成功清理 Dream Skin 状态，Codex 恢复正常
+- [x] restore 处理损坏 journal 不崩溃
+- [x] Contract Test 覆盖所有成功和失败路径
 
 ## 被阻塞于
 
@@ -60,9 +60,11 @@ Status: ready-for-agent
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- **[2026-07-19T05:47:00Z] Issue 10 实施完成 Summary 报告**: [`docs/studio/reports/2026-07-19-ds-tm-002-issue-10-summary.md`](../../../docs/studio/reports/2026-07-19-ds-tm-002-issue-10-summary.md)

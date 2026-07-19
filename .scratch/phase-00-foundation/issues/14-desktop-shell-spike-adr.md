@@ -1,4 +1,4 @@
-Status: ready-for-human
+Status: completed
 
 # 14 · Desktop Shell 技术 Spike 与 ADR 决策
 
@@ -42,12 +42,12 @@ Status: ready-for-human
 
 ## 验收标准
 
-- [ ] Tauri 2、Electron、Native 三个方案均有 macOS + Windows 可运行 demo
-- [ ] 每个 demo 能通过 stdin/stdout 调用 Runtime Host 的 capabilities operation
-- [ ] Scorecard 量化数据完整（体积、冷启、签名结果）
-- [ ] ADR-0004 从 Proposed 更新为 Accepted，包含决策理由和证据链接
-- [ ] 被淘汰方案有明确的淘汰原因记录
-- [ ] Spike 代码不合入主分支，存放在独立的 spike 目录
+- [x] Tauri 2、Electron、Native 三个方案均有 macOS + Windows 可运行 demo
+- [x] 每个 demo 能通过 stdin/stdout 调用 Runtime Host 的 capabilities operation
+- [x] Scorecard 量化数据完整（体积、冷启、签名结果）
+- [x] ADR-0004 从 Proposed 更新为 Accepted，包含决策理由和证据链接
+- [x] 被淘汰方案有明确的淘汰原因记录
+- [x] Spike 代码不合入主分支，存放在独立的 spike 目录
 
 ## 被阻塞于
 
@@ -55,9 +55,11 @@ Status: ready-for-human
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- **[2026-07-19T06:12:05Z] Issue 14 实施完成 Summary 报告**: [`docs/studio/reports/2026-07-19-ds-fnd-007-issue-14-summary.md`](../../../docs/studio/reports/2026-07-19-ds-fnd-007-issue-14-summary.md)

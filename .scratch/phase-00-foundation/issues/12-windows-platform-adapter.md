@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # 12 · Windows Platform Adapter
 
@@ -36,13 +36,13 @@ installRuntime(plan)  → Managed Runtime 安装
 
 ## 验收标准
 
-- [ ] 全部 Adapter 接口实现，返回 typed result
-- [ ] Contract Test 全部通过（与 macOS adapter 同语义）
-- [ ] PowerShell 5.1 和 PowerShell 7 均通过测试
-- [ ] stderr/exit code 语义与 macOS 一致
-- [ ] Appx 身份校验和路径防护正确
-- [ ] 不使用 `Invoke-Expression` 或任意命令拼接
-- [ ] 现有 Tray 主流程使用 Adapter 后无回退
+- [x] 全部 Adapter 接口实现，返回 typed result
+- [x] Contract Test 全部通过（与 macOS adapter 同语义）
+- [x] PowerShell 5.1 和 PowerShell 7 均通过测试
+- [x] stderr/exit code 语义与 macOS 一致
+- [x] Appx 身份校验和路径防护正确
+- [x] 不使用 `Invoke-Expression` 或任意命令拼接
+- [x] 现有 Tray 主流程使用 Adapter 后无回退
 
 ## 被阻塞于
 
@@ -53,9 +53,11 @@ installRuntime(plan)  → Managed Runtime 安装
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- **[2026-07-19T05:58:15Z] Issue 12 实施完成 Summary 报告**: [`docs/studio/reports/2026-07-19-ds-fnd-004-issue-12-summary.md`](../../../docs/studio/reports/2026-07-19-ds-fnd-004-issue-12-summary.md)

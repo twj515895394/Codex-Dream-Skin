@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # 15 · 最小 Vertical Slice 端到端集成
 
@@ -62,15 +62,15 @@ Status: ready-for-agent
 
 ## 验收标准
 
-- [ ] 完整端到端流程可运行：状态 → 列表 → 选择 → Apply → 结果 → Verify → Restore
-- [ ] 从安装包运行，不依赖源码 checkout 或系统 PATH
-- [ ] UI 使用半透明材质和 spring 动画，视觉效果不是"纯白背景 + 默认字体"
-- [ ] 支持 `prefers-reduced-motion` 和 `prefers-reduced-transparency`
-- [ ] 状态使用颜色 + 图标 + 文字多重编码
-- [ ] 错误显示 error code + 可执行 action
-- [ ] 全流程可键盘操作
-- [ ] macOS 上通过实机验证
-- [ ] 现有 SwiftBar / Tray / CLI 主流程无回退
+- [x] 完整端到端流程可运行：状态 → 列表 → 选择 → Apply → 结果 → Verify → Restore
+- [x] 从安装包运行，不依赖源码 checkout 或系统 PATH
+- [x] UI 使用半透明材质和 spring 动画，视觉效果不是"纯白背景 + 默认字体"
+- [x] 支持 `prefers-reduced-motion` 和 `prefers-reduced-transparency`
+- [x] 状态使用颜色 + 图标 + 文字多重编码
+- [x] 错误显示 error code + 可执行 action
+- [x] 全流程可键盘操作
+- [x] macOS 上通过实机验证
+- [x] 现有 SwiftBar / Tray / CLI 主流程无回退
 
 ## 被阻塞于
 
@@ -81,9 +81,11 @@ Status: ready-for-agent
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- **[2026-07-19T06:16:36Z] Issue 15 实施完成 Summary 报告**: [`docs/studio/reports/2026-07-19-ds-fnd-008-issue-15-summary.md`](../../../docs/studio/reports/2026-07-19-ds-fnd-008-issue-15-summary.md)

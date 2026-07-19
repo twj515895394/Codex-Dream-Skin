@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: completed
 
 # 13 · Managed Runtime 分发、校验与升降级
 
@@ -44,13 +44,13 @@ STATE_ROOT/runtime/
 
 ## 验收标准
 
-- [ ] 从零安装 Runtime payload 成功，可执行
-- [ ] 升级流程：current → previous，新版 → current
-- [ ] 降级流程：previous → current
-- [ ] manifest/hash 校验失败拒绝安装
-- [ ] 安装中断后（模拟 kill），新进程检测到 incomplete journal 并恢复
-- [ ] 不依赖源码 checkout 或系统 PATH 中的 Node
-- [ ] Contract Test 覆盖安装、升级、降级、校验失败、中断恢复
+- [x] 从零安装 Runtime payload 成功，可执行
+- [x] 升级流程：current → previous，新版 → current
+- [x] 降级流程：previous → current
+- [x] manifest/hash 校验失败拒绝安装
+- [x] 安装中断后（模拟 kill），新进程检测到 incomplete journal 并恢复
+- [x] 不依赖源码 checkout 或系统 PATH 中的 Node
+- [x] Contract Test 覆盖安装、升级、降级、校验失败、中断恢复
 
 ## 被阻塞于
 
@@ -60,9 +60,11 @@ STATE_ROOT/runtime/
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- **[2026-07-19T06:08:35Z] Issue 13 实施完成 Summary 报告**: [`docs/studio/reports/2026-07-19-ds-fnd-006-issue-13-summary.md`](../../../docs/studio/reports/2026-07-19-ds-fnd-006-issue-13-summary.md)
