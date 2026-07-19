@@ -8,11 +8,15 @@ completedWorkItem: DS-FND-001
 currentWorkItem: DS-QA-001
 parallelReadyWorkItem: DS-FND-002
 branch: feat/codex-theme-import-mvp
+headRecordedBeforePhaseCurrentUpdate: 4a7b425ab04311177f6d35a4874dbb37221aaaab
 designBaselineCommit: 5d3243c21715080072b4007ac5da10e6d3a7f185
 lastReviewedMainCommit: dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c
 upstreamReviewId: UPR-20260719-001
+latestProjectHandoff: ../../handoff-20260719-phase00-design-ready.md
 latestHistoricalSnapshot: archive/handoff-20260719-phase00-design-ready.md
 ```
+
+> `headRecordedBeforePhaseCurrentUpdate` 是生成项目级历史 handoff 后、更新本文件之前的真实分支 HEAD。读取新会话时仍需重新确认 GitHub 当前 HEAD。
 
 ## 当前状态
 
@@ -42,6 +46,13 @@ Phase 00 的开发前细化设计已经完成，阶段从 `Planned` 进入 `Read
 - Desktop Shell prototype；
 - Vertical Slice；
 - 自动化和实机验收。
+
+## Handoff 指针
+
+- 项目级不可覆盖快照：[`../../handoff-20260719-phase00-design-ready.md`](../../handoff-20260719-phase00-design-ready.md)；
+- Phase 级不可覆盖快照：[`archive/handoff-20260719-phase00-design-ready.md`](./archive/handoff-20260719-phase00-design-ready.md)；
+- 当前阶段入口：本文件；
+- 跨阶段唯一入口：[`../../current.md`](../../current.md)。
 
 ## 设计目录
 
@@ -76,7 +87,7 @@ docs/studio/phases/phase-00-foundation-and-shell-spike/
 - upstream cursor 推进到 `dfcfa4f0...`；
 - `UPA-012/013` 登记；
 - Work Register 更新；
-- 本 handoff 快照。
+- Phase 级和项目级 handoff 快照。
 
 由于这是设计 Work Item：
 
@@ -102,7 +113,7 @@ docs/studio/phases/phase-00-foundation-and-shell-spike/
 - 测试 state root 隔离；
 - 不触发真实 Codex 的 `--no-apply` 路径。
 
-进入 `In Progress` 前记录本次实现基线和 fixture 目录。
+进入 `In Progress` 前记录本次实现基线、fixture 目录和测试命令。
 
 ## 并行 Ready Work Item
 
@@ -151,17 +162,49 @@ nextReviewRange:
 - [x] CI、Contract Test、实机和回滚计划可执行；
 - [x] 依赖、风险、Owner 和 Known Issues 规则明确；
 - [x] Work Register 更新；
-- [x] 必要 ADR 已建立为 Accepted 或 Proposed。
+- [x] 必要 ADR 已建立为 Accepted 或 Proposed；
+- [x] 项目级和 Phase 级历史 handoff 已生成。
 
 ## 当前阻塞与风险
 
 没有设计阻塞。实施风险：
 
+- PR #2 当前 GitHub 报告 `mergeable=false`；
 - Desktop Shell 尚未选型；
 - Windows importer 尚未形成统一入口；
 - legacy Runtime 输出需要 Adapter 归一化；
 - managed Runtime 的 Node/sidecar 形态需 Spike；
 - 双平台签名、安装和实机条件必须在进入 Verification 前落实。
+
+## 测试、实机与回滚状态
+
+```yaml
+importerAutomatedRegression: not-implemented
+runtimeApiContractRunner: not-implemented
+macosAdapter: not-implemented
+windowsAdapter: not-implemented
+operationLockAndJournal: not-implemented
+managedRuntime: not-implemented
+desktopShellSpike: not-started
+verticalSlice: not-started
+macosRealDeviceMatrix: not-started
+windowsRealDeviceMatrix: not-started
+rollbackEvidence: not-started
+```
+
+## 必读文档
+
+1. 本文件；
+2. `docs/studio/work-register.md`；
+3. `docs/studio/phases/phase-00-foundation-and-shell-spike/README.md`；
+4. `docs/studio/phases/phase-00-foundation-and-shell-spike/contracts-and-data-model.md`；
+5. `docs/studio/phases/phase-00-foundation-and-shell-spike/technical-design.md`；
+6. `docs/studio/phases/phase-00-foundation-and-shell-spike/test-and-acceptance-plan.md`；
+7. `docs/studio/phases/phase-00-foundation-and-shell-spike/security-and-privacy.md`；
+8. `docs/studio/phases/phase-00-foundation-and-shell-spike/adr/README.md`；
+9. `docs/studio/upstream/upstream-baseline.md`；
+10. `docs/studio/upstream/upstream-adoption-log.md`；
+11. 项目级历史 handoff 仅用于追溯。
 
 ## 禁止提前进行
 
@@ -170,12 +213,26 @@ nextReviewRange:
 - 不凭偏好确定 Tauri/Electron；
 - 不让 UI 执行任意 Shell/PowerShell 或连接 CDP；
 - 不绕过 operation lock 和 transaction journal；
+- 不依赖源码 checkout 或用户 PATH 作为正式 Runtime；
 - 不把 Planned UPA 写成 Adopted；
-- 不把设计状态写成已实现或已测试。
+- 不把设计状态写成已实现或已测试；
+- 不让测试操作真实用户主题、配置或 Codex。
 
 ## 下一步
 
 ```text
-执行 DS-QA-001：建立 importer fixture 和自动化回归。
+执行 DS-QA-001：建立 importer fixture、隔离 state root 和自动化回归。
 边界清晰时并行执行 DS-FND-002：落地 Runtime API Schema 与 reference Contract Runner。
+```
+
+## 新会话启动 Prompt
+
+```text
+请读取 feat/codex-theme-import-mvp 分支下的 .handoff/current.md 和 .handoff/phases/phase00/current.md，并按其中顺序恢复上下文。
+
+先确认当前分支真实 HEAD、PR #2 状态、main 当前 SHA 和 upstream cursor。不要自动 merge/rebase main；若 main 超过 dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c，先续接 Review。
+
+Phase 00 已达到 Ready，DS-FND-001 已 Done，但功能实现尚未开始。接下来执行 DS-QA-001：建立 .codex-theme importer 自动化回归。测试必须使用隔离 state root，并走 --no-apply，不操作真实 Codex 或用户主题。
+
+边界清晰时可并行执行 DS-FND-002：落地 Runtime JSON API v1 Schema、reference Runtime Host 和 Contract Runner。不要先写平台 Adapter，再回头补契约；不要提前进行 Theme Manager 大规模 UI 或 Desktop Shell 最终选型。
 ```
