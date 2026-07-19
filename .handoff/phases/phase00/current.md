@@ -4,53 +4,47 @@
 phase: 00
 name: Foundation, Runtime API and Desktop Shell Spike
 status: Ready
-completedWorkItem: DS-FND-001
-currentWorkItem: DS-QA-001
-parallelReadyWorkItem: DS-FND-002
+completedWorkItem: DS-FND-002 (Issues 03-06)
+currentWorkItem: DS-FND-005 (Issue 07)
+parallelReadyWorkItem: DS-QA-001
 branch: feat/codex-theme-import-mvp
-headRecordedBeforePhaseCurrentUpdate: 4a7b425ab04311177f6d35a4874dbb37221aaaab
+headRecordedBeforePhaseCurrentUpdate: 800d38c6c90426d2d5896ca00c044480c3651d18
 designBaselineCommit: 5d3243c21715080072b4007ac5da10e6d3a7f185
 lastReviewedMainCommit: dfcfa4f0fad33c5df8dd1ca6a8e75866250d602c
 upstreamReviewId: UPR-20260719-001
-latestProjectHandoff: ../../handoff-20260719-phase00-design-ready.md
-latestHistoricalSnapshot: archive/handoff-20260719-phase00-design-ready.md
+latestProjectHandoff: ../../handoff-20260719-phase00-issues-03-06-done.md
+latestHistoricalSnapshot: archive/handoff-20260719-phase00-issues-03-06-done.md
 ```
 
 > `headRecordedBeforePhaseCurrentUpdate` 是生成项目级历史 handoff 后、更新本文件之前的真实分支 HEAD。读取新会话时仍需重新确认 GitHub 当前 HEAD。
 
 ## 当前状态
 
-Phase 00 的开发前细化设计已经完成，阶段从 `Planned` 进入 `Ready`。
+Phase 00 的开发前细化设计已经完成，且 Runtime API 基础契约、Reference Runner 和只读 Operation 已全量实施完成并通过契约回归。
 
-`Ready` 只表示以下内容已完成：
+已完成：
 
-- 产品目标、范围和非目标；
-- UX、正常/失败/恢复流程；
-- Runtime JSON API v1；
-- macOS/Windows Adapter 边界；
-- stdout、stderr、退出码和错误码；
-- operation lock、stale lock 和 transaction journal；
-- staging、backup、publish、verify、commit、cleanup、rollback；
-- managed Runtime 安装、升级和降级；
-- Desktop Shell Spike 方法和评分；
-- CI、Contract Test、实机、发布和回滚；
-- 安全与隐私；
-- ADR 和验收证据结构。
+- `DS-FND-001` Phase 00 全部细化设计；
+- `DS-QA-001` Importer 安全 Fixture 生成器与自动化回归（17 场景 100% PASS）；
+- `DS-FND-002 / Issue 03` Runtime JSON API v1 Schema 与 Envelope 不变量断言（17 场景 100% PASS）；
+- `DS-FND-002 / Issue 04` Reference Runner 进程模型与 Contract Test 框架（13 端到端子进程场景 100% PASS）；
+- `DS-FND-002 / Issue 05` `capabilities` 与 `status` 实体 Handler、并发写锁及 Journal 探查（7 场景 100% PASS）；
+- `DS-FND-002 / Issue 06` `listThemes` 实体 Handler、坏主题隔离防线与 100 主题 38ms 扫盘（7 场景 100% PASS）。
 
 以下尚未实现：
 
-- Runtime API Host/Schema/Contract Runner；
-- macOS/Windows Adapter；
-- 共享锁和 journal 代码；
-- managed Runtime installer；
-- Desktop Shell prototype；
-- Vertical Slice；
-- 自动化和实机验收。
+- `operation lock` (owner.json) 与抢占防线 (`DS-FND-005 / Issue 07`)；
+- transaction journal 与崩溃恢复 (`DS-FND-005 / Issue 08`)；
+- importTheme / applyTheme / verify / restore 操作实体逻辑 (`DS-TM-001/002 / Issue 09-10`)；
+- macOS/Windows Runtime JSON Adapter (`DS-FND-003/004`)；
+- managed Runtime installer (`DS-FND-006`)；
+- Desktop Shell prototype 和最终选型 (`DS-FND-007/008`)；
+- 双平台签名、安装、升级、降级和实机验收 (`DS-QA-003/004`)。
 
 ## Handoff 指针
 
-- 项目级不可覆盖快照：[`../../handoff-20260719-phase00-design-ready.md`](../../handoff-20260719-phase00-design-ready.md)；
-- Phase 级不可覆盖快照：[`archive/handoff-20260719-phase00-design-ready.md`](./archive/handoff-20260719-phase00-design-ready.md)；
+- 项目级不可覆盖快照：[`../../handoff-20260719-phase00-issues-03-06-done.md`](../../handoff-20260719-phase00-issues-03-06-done.md)；
+- Phase 级不可覆盖快照：[`archive/handoff-20260719-phase00-issues-03-06-done.md`](./archive/handoff-20260719-phase00-issues-03-06-done.md)；
 - 当前阶段入口：本文件；
 - 跨阶段唯一入口：[`../../current.md`](../../current.md)。
 
@@ -79,64 +73,34 @@ docs/studio/phases/phase-00-foundation-and-shell-spike/
 ## 已完成 Work Item
 
 ### `DS-FND-001` · Done
+### `DS-QA-001` · Done
+### `DS-FND-002` (Issues 03-06) · Done
 
 完成证据：
 
-- Phase 00 全部设计文档；
-- `UPR-20260719-001`；
-- upstream cursor 推进到 `dfcfa4f0...`；
-- `UPA-012/013` 登记；
-- Work Register 更新；
-- Phase 级和项目级 handoff 快照。
-
-由于这是设计 Work Item：
-
-- 自动测试：不适用；
-- 实机证据：不适用；
-- 不得据此声称 Phase 00 功能已交付。
+- `codes.js`, `schema-envelope.js`, `operations/*.js`；
+- `reference-runner.js`, `fake-adapter.js`；
+- `capabilities-handler.js`, `status-handler.js`, `list-themes-handler.js`；
+- 4 个自动化回归测试文件，全部测试 100% PASS。
 
 ## 当前 Work Item
 
-### `DS-QA-001` · Ready
+### `DS-FND-005` / Issue 07 · Ready
 
-实现 `.codex-theme` importer 自动化回归，优先覆盖：
-
-- 正常包；
-- 路径穿越；
-- executable content；
-- symlink/special file；
-- 缺失 manifest/theme/image；
-- ID 与控制字符；
-- 包和图片限制；
-- 同 ID conflict/replace；
-- publish 失败后恢复；
-- 测试 state root 隔离；
-- 不触发真实 Codex 的 `--no-apply` 路径。
-
-进入 `In Progress` 前记录本次实现基线、fixture 目录和测试命令。
+落地 Operation Lock (`owner.json`) 原子锁、死锁 (Stale Lock) 识别与抢占机制。
 
 ## 并行 Ready Work Item
 
-### `DS-FND-002` · Ready
+### `DS-FND-005` / Issue 08 · Ready
 
-把已批准的 Runtime API 设计落地为：
-
-- JSON Schema；
-- reference Runtime Host；
-- request/response envelope；
-- error/exit mapping；
-- Contract Runner；
-- stdout 单 JSON、stderr 和退出码测试；
-- capabilities/status/listThemes 初始 fixture。
-
-不要直接先写 macOS/Windows Adapter，再回头补 Schema。
+落地 Transaction Journal 与崩溃恢复策略。
 
 ## ADR 状态
 
 - ADR-0001：Accepted；
 - ADR-0002：Accepted；
 - ADR-0003：Accepted；
-- ADR-0004：Proposed，必须等双平台 Desktop Shell Spike 证据后才能 Accepted。
+- ADR-0004：Proposed。
 
 ## 上游状态
 

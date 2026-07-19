@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: complete
 
 # 04 · Runtime Host Reference Runner 与 Contract Test 框架
 
@@ -23,12 +23,12 @@ Status: ready-for-agent
 
 ## 验收标准
 
-- [ ] Reference Runner 可以作为独立进程启动，接收 stdin JSON，返回 stdout JSON
-- [ ] 合法请求返回 `ok=true` + 正确 envelope；非法请求返回 `ok=false` + 正确错误码和退出码
-- [ ] Contract Test 至少覆盖 10 个场景：合法/非法 JSON、apiVersion 错误、未知 operation、缺失必填字段、request 超大、内部异常等
-- [ ] Contract Test 校验所有 response 通过 JSON Schema 验证
-- [ ] 退出码与 error.category 映射一致
-- [ ] fake adapter 接口定义清晰，可供后续 operation 实现插入
+- [x] Reference Runner 可以作为独立进程启动，接收 stdin JSON，返回 stdout JSON
+- [x] 合法请求返回 `ok=true` + 正确 envelope；非法请求返回 `ok=false` + 正确错误码和退出码
+- [x] Contract Test 至少覆盖 10 个场景：合法/非法 JSON、apiVersion 错误、未知 operation、缺失必填字段、request 超大、内部异常等
+- [x] Contract Test 校验所有 response 通过 JSON Schema 验证
+- [x] 退出码与 error.category 映射一致
+- [x] fake adapter 接口定义清晰，可供后续 operation 实现插入
 
 ## 被阻塞于
 
@@ -36,9 +36,13 @@ Status: ready-for-agent
 
 ## 完成总结报告
 
-- [ ] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
-- [ ] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
-- [ ] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
-- [ ] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
+- [x] 若本 issue 涉及接口、参数、响应字段、校验规则或默认行为变化，完成后已在当前项目约定的 reports 目录生成对应 summary 报告。
+- [x] summary 报告已包含新增/修改接口、输入参数变更、输出字段变更、人工验证建议、技术验证结果、风险与注意事项。
+- [x] 已在本 issue 的 `## 评论` 中追加 summary 报告路径和生成时间。
+- [x] 若本 issue 无接口或可观测行为变化，已在 `## 评论` 中说明无需 summary 报告的原因。
 
 ## 评论
+
+- **完成总结报告路径**：[`.scratch/phase-00-foundation/reports/04-reference-runner-contract-test-summary.md`](../reports/04-reference-runner-contract-test-summary.md)
+- **生成时间**：2026-07-19T02:15:59Z
+- **自动化测试**：13 项端到端子进程 Contract Test 场景已 100% PASS。
